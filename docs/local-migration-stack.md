@@ -234,6 +234,26 @@ python -m json.tool /tmp/vdb-guardian-source-fingerprint.json >/dev/null
 
 For the committed small fixture, the expected artifact contains `10` query fingerprints.
 
+## Source/target artifact comparison check
+
+After both source and target fingerprint artifacts exist, compare them through the Python engine:
+
+```bash
+go run ./cmd/vdbg compare-artifacts \
+  --source /tmp/vdb-guardian-source-fingerprint.json \
+  --target /tmp/vdb-guardian-target-fingerprint.json \
+  --artifact-dir /tmp/vdb-guardian-compare \
+  --job-id real-artifact-smoke
+```
+
+The command writes:
+
+```text
+/tmp/vdb-guardian-compare/real-artifact-smoke-result.json
+```
+
+When both artifacts are built from the same committed fixture and compatible settings, the comparison should report `matched_queries: 10` and no missing source or target queries. Exact distances depend on source/target retrieval behavior.
+
 ## Milvus connector smoke check
 
 The low-level Milvus readiness check validates that the gRPC SDK endpoint is reachable:
@@ -244,4 +264,4 @@ scripts/check-migration-stack.sh milvus-port
 
 ## Current limitations
 
-This stack now supports validating the pgvector target-side seed, search, and fingerprint artifact loops, plus source-side Milvus fixture seeding, search, and fingerprint artifact loops. It does not yet run Milvus-to-pgvector migrations or execute the full migrate-and-verify workflow. Those capabilities will be added in the migration MVP steps that follow.
+This stack now supports validating the pgvector target-side seed, search, and fingerprint artifact loops, source-side Milvus fixture seeding, search, and fingerprint artifact loops, plus source/target artifact comparison. It does not yet run Milvus-to-pgvector migrations or execute the full migrate-and-verify workflow. Those capabilities will be added in the migration MVP steps that follow.

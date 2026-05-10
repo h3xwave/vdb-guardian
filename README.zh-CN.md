@@ -67,6 +67,7 @@ Python 检索行为指纹算法引擎
 - `vdbg seed-pgvector` 真实 pgvector fixture 写入 CLI；
 - `vdbg search-pgvector` 真实 pgvector 检索冒烟 CLI；
 - `vdbg build-pgvector-artifact` 真实 pgvector 指纹 artifact CLI；
+- `vdbg compare-artifacts` 真实源/目标指纹 artifact 对比 CLI；
 - 合成向量数据生成器；
 - 指纹 artifact builder：`internal/fingerprints`；
 - 指纹引擎接口：`internal/engine`；
@@ -454,7 +455,25 @@ go run ./cmd/vdbg build-pgvector-artifact \
 docs/build-pgvector-artifact-cli.md
 ```
 
-### 22. 合成向量 Fixture
+### 22. 真实源/目标 Artifact 对比 CLI
+
+`vdbg compare-artifacts` 会读取已有的 source / target fingerprint artifact，调用 Python 指纹引擎，并写出标准化 result artifact：
+
+```bash
+go run ./cmd/vdbg compare-artifacts \
+  --source /tmp/vdb-guardian-source-fingerprint.json \
+  --target /tmp/vdb-guardian-target-fingerprint.json \
+  --artifact-dir /tmp/vdb-guardian-compare \
+  --job-id real-artifact-smoke
+```
+
+详细说明见：
+
+```text
+docs/compare-artifacts-cli.md
+```
+
+### 23. 合成向量 Fixture
 
 `vdbg generate-synthetic-fixture` 命令可以生成固定 seed 的 records 与 query vectors，供后续 Milvus 写入、pgvector 写入和迁移对比使用。
 

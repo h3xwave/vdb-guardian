@@ -38,6 +38,7 @@ Implemented in this scaffold:
 - `vdbg seed-pgvector` real pgvector fixture seeding CLI.
 - `vdbg search-pgvector` real pgvector search smoke CLI.
 - `vdbg build-pgvector-artifact` real pgvector fingerprint artifact CLI.
+- `vdbg compare-artifacts` real source/target fingerprint artifact comparison CLI.
 - Synthetic vector dataset generator.
 - Fingerprint artifact builder.
 - Fingerprint engine interface.
@@ -109,6 +110,7 @@ go run ./cmd/vdbg build-milvus-artifact --fixture testdata/migration/synthetic-s
 go run ./cmd/vdbg seed-pgvector --fixture testdata/migration/synthetic-small.json --connection-url '[REDACTED]'
 go run ./cmd/vdbg search-pgvector --fixture testdata/migration/synthetic-small.json --connection-url '[REDACTED]' --top-k 3 --expand-k 5
 go run ./cmd/vdbg build-pgvector-artifact --fixture testdata/migration/synthetic-small.json --connection-url '[REDACTED]' --output /tmp/vdb-guardian-target-fingerprint.json --top-k 3 --expand-k 5 --stable-k 2 --boundary-k 1
+go run ./cmd/vdbg compare-artifacts --source /tmp/vdb-guardian-source-fingerprint.json --target /tmp/vdb-guardian-target-fingerprint.json --artifact-dir /tmp/vdb-guardian-compare --job-id real-artifact-smoke
 ```
 
 ## Engine protocol
@@ -296,6 +298,20 @@ go run ./cmd/vdbg build-pgvector-artifact \
 ```
 
 See `docs/build-pgvector-artifact-cli.md` for the target-side artifact workflow and limitations.
+
+## Source/target artifact comparison
+
+The `vdbg compare-artifacts` command compares existing source and target fingerprint artifacts through the Python engine and writes a normalized result artifact:
+
+```bash
+go run ./cmd/vdbg compare-artifacts \
+  --source /tmp/vdb-guardian-source-fingerprint.json \
+  --target /tmp/vdb-guardian-target-fingerprint.json \
+  --artifact-dir /tmp/vdb-guardian-compare \
+  --job-id real-artifact-smoke
+```
+
+See `docs/compare-artifacts-cli.md` for the comparison workflow and result schema.
 
 ## Synthetic vector fixtures
 
