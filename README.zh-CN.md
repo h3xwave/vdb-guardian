@@ -57,6 +57,7 @@ Python 检索行为指纹算法引擎
 - Go / Python JSON 引擎协议；
 - 内存 Artifact Store：`internal/artifacts`；
 - Python 指纹算法包：`python/vdb_fingerprint_engine`；
+- Artifact-backed 指纹对比；
 - 边界候选集合选择；
 - Jaccard distance；
 - boundary flip rate；
@@ -132,9 +133,17 @@ uv run python -m vdb_fingerprint_engine.cli --version
 
 ```bash
 cd python
-printf '{"job_id":"job-1","source_fingerprint_path":"source.json","target_fingerprint_path":"target.json"}' > /tmp/vdb-engine-input.json
+printf '{"fingerprints":[{"query_id":"q-1","stable_neighbors":["a","b","c"],"boundary_candidates":["d","e"],"top_k_ids":["a","b","c","d"]}]}' > /tmp/vdb-source-fingerprint.json
+printf '{"fingerprints":[{"query_id":"q-1","stable_neighbors":["a","b","x"],"boundary_candidates":["d","f"],"top_k_ids":["a","b","x","f"]}]}' > /tmp/vdb-target-fingerprint.json
+printf '{"job_id":"job-1","source_fingerprint_path":"/tmp/vdb-source-fingerprint.json","target_fingerprint_path":"/tmp/vdb-target-fingerprint.json"}' > /tmp/vdb-engine-input.json
 uv run python -m vdb_fingerprint_engine.cli compare --input /tmp/vdb-engine-input.json --output /tmp/vdb-engine-output.json
 cat /tmp/vdb-engine-output.json
+```
+
+完整 artifact 格式见：
+
+```text
+docs/fingerprint-artifact-format.md
 ```
 
 ## 本地开发要求
@@ -335,6 +344,7 @@ feat(engine): add boundary candidate metrics
 
 ### Phase 3：Milvus 到 pgvector 实验链路
 
+- [x] Artifact-backed 指纹对比；
 - [ ] Milvus connector；
 - [ ] pgvector connector；
 - [ ] 合成数据生成；

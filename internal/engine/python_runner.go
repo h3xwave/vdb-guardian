@@ -36,8 +36,13 @@ type compareOutputJSON struct {
 }
 
 type metricSummaryJSON struct {
-	FingerprintDistance float64 `json:"fingerprint_distance"`
-	BoundaryFlipRate    float64 `json:"boundary_flip_rate"`
+	FingerprintDistance       float64 `json:"fingerprint_distance"`
+	StableNeighborDistance    float64 `json:"stable_neighbor_distance"`
+	BoundaryCandidateDistance float64 `json:"boundary_candidate_distance"`
+	BoundaryFlipRate          float64 `json:"boundary_flip_rate"`
+	MatchedQueryCount         int     `json:"matched_query_count"`
+	MissingSourceQueryCount   int     `json:"missing_source_query_count"`
+	MissingTargetQueryCount   int     `json:"missing_target_query_count"`
 }
 
 // NewPythonRunner creates a Python subprocess-backed Engine implementation. The
@@ -137,8 +142,13 @@ func readCompareOutput(path string) (CompareOutput, error) {
 		JobID:            payload.JobID,
 		ConsistencyScore: payload.ConsistencyScore,
 		Metrics: MetricSummary{
-			FingerprintDistance: payload.Metrics.FingerprintDistance,
-			BoundaryFlipRate:    payload.Metrics.BoundaryFlipRate,
+			FingerprintDistance:       payload.Metrics.FingerprintDistance,
+			StableNeighborDistance:    payload.Metrics.StableNeighborDistance,
+			BoundaryCandidateDistance: payload.Metrics.BoundaryCandidateDistance,
+			BoundaryFlipRate:          payload.Metrics.BoundaryFlipRate,
+			MatchedQueryCount:         payload.Metrics.MatchedQueryCount,
+			MissingSourceQueryCount:   payload.Metrics.MissingSourceQueryCount,
+			MissingTargetQueryCount:   payload.Metrics.MissingTargetQueryCount,
 		},
 	}, nil
 }

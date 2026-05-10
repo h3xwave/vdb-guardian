@@ -8,7 +8,8 @@ from pathlib import Path
 from pydantic import ValidationError
 
 from vdb_fingerprint_engine import __version__
-from vdb_fingerprint_engine.schemas import CompareInput, CompareOutput, MetricSummary
+from vdb_fingerprint_engine.artifact_compare import compare_fingerprint_artifacts
+from vdb_fingerprint_engine.schemas import CompareInput, CompareOutput
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -29,11 +30,11 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def run_compare(input_path: Path, output_path: Path) -> CompareOutput:
-    """Run a minimal schema-backed fingerprint comparison command.
+    """Run artifact-backed fingerprint comparison from a JSON protocol request.
 
-    This first protocol implementation validates JSON input and writes a stable
-    JSON response. It intentionally returns neutral perfect-consistency metrics
-    until artifact-backed fingerprint comparison is implemented in a later step.
+    The command reads a Go-generated CompareInput payload, loads the source and
+    target fingerprint artifact files referenced by that payload, computes
+    retrieval behavior consistency metrics, and writes a CompareOutput JSON file.
 
     Args:
         input_path: Path to the JSON CompareInput payload created by Go.
@@ -43,16 +44,17 @@ def run_compare(input_path: Path, output_path: Path) -> CompareOutput:
         The CompareOutput object written to disk.
 
     Raises:
-        FileNotFoundError: If the input JSON file does not exist.
-        ValidationError: If the input payload does not match CompareInput.
+        FileNotFoundError: If the input JSON file or either fingerprint artifact is missing.
+        ValueError: If an artifact is empty or semantically invalid.
+        ValidationError: If the input payload or artifact payload does not match the schema.
         OSError: If reading or writing files fails.
     """
     payload = json.loads(input_path.read_text(encoding="utf-8"))
     compare_input = CompareInput.model_validate(payload)
-    output = CompareOutput(
-        job_id=compare_input.job_id,
-        consistency_score=1.0,
-        metrics=MetricSummary(fingerprint_distance=0.0, boundary_flip_rate=0.0),
+    output = compare_fingerprint_artifacts(
+        compare_input.job_id,
+        Path(compare_input.source_fingerprint_path),
+        Path(compare_input.target_fingerprint_path),
     )
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(output.model_dump_json(indent=2), encoding="utf-8")
@@ -74,7 +76,13 @@ def main() -> int:
     if args.command == "compare":
         try:
             run_compare(Path(args.input), Path(args.output))
-        except (FileNotFoundError, ValidationError, json.JSONDecodeError, OSError) as exc:
+        except (
+            FileNotFoundError,
+            ValueError,
+            ValidationError,
+            json.JSONDecodeError,
+            OSError,
+        ) as exc:
             print(f"compare input error: {exc}", file=sys.stderr)
             return 1
         return 0

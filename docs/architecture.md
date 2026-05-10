@@ -28,6 +28,7 @@ Go owns enterprise reliability concerns:
 Python owns algorithm velocity:
 
 - Boundary candidate selection.
+- Artifact-backed source/target fingerprint comparison.
 - Stable-neighbor and fingerprint metrics.
 - Fingerprint distance.
 - Consistency scoring.

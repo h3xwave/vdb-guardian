@@ -21,8 +21,18 @@ type CompareInput struct {
 type MetricSummary struct {
 	// FingerprintDistance is the normalized overall distance between source and target fingerprints.
 	FingerprintDistance float64
+	// StableNeighborDistance is the average Jaccard distance between stable-neighbor sets.
+	StableNeighborDistance float64
+	// BoundaryCandidateDistance is the average Jaccard distance between boundary-candidate sets.
+	BoundaryCandidateDistance float64
 	// BoundaryFlipRate measures how often topK boundary candidates enter or leave visible results.
 	BoundaryFlipRate float64
+	// MatchedQueryCount is the number of query IDs found in both source and target artifacts.
+	MatchedQueryCount int
+	// MissingSourceQueryCount is the number of target query IDs missing from the source artifact.
+	MissingSourceQueryCount int
+	// MissingTargetQueryCount is the number of source query IDs missing from the target artifact.
+	MissingTargetQueryCount int
 }
 
 // CompareOutput is the normalized response returned by any fingerprint engine

@@ -28,6 +28,7 @@ Implemented in this scaffold:
 - In-memory artifact store.
 - Python boundary candidate selection.
 - Python compare CLI using the Go/Python JSON engine protocol.
+- Artifact-backed fingerprint comparison.
 - Python Jaccard distance, boundary flip rate, and weighted fingerprint distance.
 - Unit tests for all implemented methods.
 - Makefile quality gates.
@@ -93,7 +94,7 @@ cd python
 uv run python -m vdb_fingerprint_engine.cli compare --input /tmp/vdb-engine-input.json --output /tmp/vdb-engine-output.json
 ```
 
-See `docs/engine-protocol.md` for the JSON input/output contract. The current compare command validates the protocol and returns neutral metrics; artifact-backed comparison is planned for the next implementation step.
+See `docs/engine-protocol.md` for the JSON input/output contract and `docs/fingerprint-artifact-format.md` for the artifact schema. The current compare command reads source and target fingerprint artifacts and returns artifact-backed consistency metrics.
 
 ## Configuration examples
 

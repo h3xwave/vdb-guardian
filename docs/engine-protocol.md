@@ -52,15 +52,22 @@ Fields:
 - `source_fingerprint_path`: artifact path for source retrieval behavior fingerprints.
 - `target_fingerprint_path`: artifact path for target retrieval behavior fingerprints.
 
+The source and target files must use the format documented in `docs/fingerprint-artifact-format.md`.
+
 ## Output JSON
 
 ```json
 {
   "job_id": "job-1",
-  "consistency_score": 1.0,
+  "consistency_score": 0.76,
   "metrics": {
-    "fingerprint_distance": 0.0,
-    "boundary_flip_rate": 0.0
+    "fingerprint_distance": 0.24,
+    "stable_neighbor_distance": 0.25,
+    "boundary_candidate_distance": 0.1,
+    "boundary_flip_rate": 0.2,
+    "matched_query_count": 10,
+    "missing_source_query_count": 0,
+    "missing_target_query_count": 0
   }
 }
 ```
@@ -69,14 +76,17 @@ Fields:
 
 - `job_id`: copied from the input payload.
 - `consistency_score`: normalized score in `[0, 1]`; higher means more consistent.
-- `metrics.fingerprint_distance`: normalized fingerprint distance.
+- `metrics.fingerprint_distance`: weighted normalized fingerprint distance.
+- `metrics.stable_neighbor_distance`: average Jaccard distance between stable-neighbor sets.
+- `metrics.boundary_candidate_distance`: average Jaccard distance between boundary-candidate sets.
 - `metrics.boundary_flip_rate`: normalized boundary candidate topK flip rate.
+- `metrics.matched_query_count`: number of query IDs present in both artifacts.
+- `metrics.missing_source_query_count`: number of target query IDs missing from the source artifact.
+- `metrics.missing_target_query_count`: number of source query IDs missing from the target artifact.
 
-## Current limitation
+## Current behavior
 
-The current Python compare command validates the protocol and returns neutral perfect-consistency metrics. Artifact-backed fingerprint comparison will be implemented in a later step.
-
-This is intentional: the current change proves the Go/Python execution boundary before concrete connector and artifact comparison logic is added.
+The Python compare command now reads source and target fingerprint artifact JSON files and computes artifact-backed consistency metrics. Missing query IDs are treated as full-distance penalties.
 
 ## Security notes
 

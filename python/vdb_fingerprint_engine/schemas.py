@@ -41,11 +41,21 @@ class MetricSummary(BaseModel):
 
     Args:
         fingerprint_distance: Overall normalized distance between source and target fingerprints.
+        stable_neighbor_distance: Average distance between stable-neighbor sets.
+        boundary_candidate_distance: Average distance between boundary-candidate sets.
         boundary_flip_rate: Fraction of boundary candidates whose topK visibility changed.
+        matched_query_count: Number of query IDs present in both artifacts.
+        missing_source_query_count: Number of target query IDs missing from the source artifact.
+        missing_target_query_count: Number of source query IDs missing from the target artifact.
     """
 
     fingerprint_distance: float = Field(ge=0.0, le=1.0)
+    stable_neighbor_distance: float = Field(default=0.0, ge=0.0, le=1.0)
+    boundary_candidate_distance: float = Field(default=0.0, ge=0.0, le=1.0)
     boundary_flip_rate: float = Field(ge=0.0, le=1.0)
+    matched_query_count: int = Field(default=0, ge=0)
+    missing_source_query_count: int = Field(default=0, ge=0)
+    missing_target_query_count: int = Field(default=0, ge=0)
 
 
 class CompareOutput(BaseModel):
