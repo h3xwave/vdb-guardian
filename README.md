@@ -24,6 +24,7 @@ Implemented in this scaffold:
 - Local verification job runner.
 - Typed YAML job configuration loader and validator.
 - Vector database connector interface.
+- Memory connector for deterministic local verification.
 - Fingerprint artifact builder.
 - Fingerprint engine interface.
 - Python subprocess engine runner.
@@ -97,6 +98,12 @@ uv run python -m vdb_fingerprint_engine.cli compare --input /tmp/vdb-engine-inpu
 ```
 
 See `docs/engine-protocol.md` for the JSON input/output contract and `docs/fingerprint-artifact-format.md` for the artifact schema. The current compare command reads source and target fingerprint artifacts and returns artifact-backed consistency metrics.
+
+## Memory connector
+
+The memory connector lives in `internal/connectors`. It returns deterministic precomputed ranked hits through the same `Connector` interface that future Milvus and pgvector connectors will implement.
+
+See `docs/memory-connector.md` for local verification usage and limitations.
 
 ## Fingerprint artifact builder
 

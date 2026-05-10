@@ -21,6 +21,7 @@ Go owns enterprise reliability concerns:
 - Local verification job orchestration.
 - Typed YAML configuration loading and validation.
 - Connector interfaces.
+- Memory connector for deterministic local verification.
 - Fingerprint artifact building from normalized search results.
 - Artifact storage abstraction.
 - Engine invocation boundary.
@@ -40,7 +41,7 @@ Python owns algorithm velocity:
 
 - `internal/jobs`: durable job lifecycle states and local verification runner.
 - `internal/config`: typed YAML job configuration loading and validation.
-- `internal/connectors`: normalized vector database connector contract.
+- `internal/connectors`: normalized vector database connector contract and memory connector.
 - `internal/engine`: Go-to-engine comparison contract and Python subprocess runner.
 - `internal/fingerprints`: artifact builder from normalized search results.
 - `internal/artifacts`: storage abstraction for fingerprints, reports, and intermediate files.

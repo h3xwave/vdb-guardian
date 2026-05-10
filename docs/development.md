@@ -54,6 +54,16 @@ Local job runner changes must update:
 
 Run `go test ./internal/jobs`, `make test`, and `git diff --check` before committing.
 
+## Connector development
+
+Connector changes must update:
+
+- `internal/connectors` interface or implementation tests.
+- connector-specific documentation under `docs/`.
+- README files when local verification behavior changes.
+
+Run `go test ./internal/connectors`, `make test`, and `git diff --check` before committing.
+
 ## Fingerprint artifact builder development
 
 Fingerprint builder changes must update:
