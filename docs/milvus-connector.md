@@ -7,21 +7,21 @@ The minimal Milvus connector implements the shared `connectors.Connector` interf
 Implemented capabilities:
 
 - Validate Milvus connector configuration.
-- Create a placeholder adapter from a Milvus address.
+- Create a real Milvus Go SDK adapter from a Milvus address.
 - Connect, count, search, and close through a small adapter boundary.
-- Convert Milvus search hits into normalized `connectors.SearchResponse` values.
+- Read Milvus collection `row_count` through SDK collection statistics.
+- Execute one-query vector search through the SDK and convert Milvus hits into normalized `connectors.SearchResponse` values.
 - Normalize metric score direction so larger `SearchHit.Score` values are better.
 
 Not yet implemented:
 
-- Real Milvus SDK network calls.
-- Collection creation.
-- Index creation or load orchestration.
-- Fixture seeding into Milvus.
+- Collection creation from the connector package.
+- Index creation or load orchestration from the connector package.
+- Fixture seeding into Milvus through a CLI.
 - Metadata filters or Milvus boolean expressions.
 - Integration tests against the Docker migration stack.
 
-The first version keeps SDK details behind an adapter boundary so connector normalization is tested without Docker or network state. The real SDK adapter will be filled in during the migration/integration steps.
+The SDK adapter is intentionally narrow and remains behind an internal adapter boundary so connector normalization and SDK request/result conversion stay unit-testable without Docker or network state.
 
 ## Configuration
 
@@ -58,8 +58,10 @@ The connector maps the shared `SearchRequest` into a Milvus adapter request:
 SearchRequest.Collection  -> collection name, or DefaultCollection when empty
 SearchRequest.QueryVector -> query vector
 SearchRequest.ExpandK     -> Milvus search limit
-SearchRequest.Params      -> connector-specific search params
+SearchRequest.Params      -> reserved for connector-specific search params
 ```
+
+The real SDK adapter currently uses the Milvus SDK `IndexFlatSearchParam` and returns one result set for one query vector. Advanced Milvus search params, metadata filters, partitions, and multi-query batching are intentionally deferred until the source-side seed/search loop is stable.
 
 The connector returns ranked hits in Milvus result order:
 

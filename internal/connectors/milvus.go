@@ -5,6 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"strconv"
+
+	milvusclient "github.com/milvus-io/milvus-sdk-go/v2/client"
+	"github.com/milvus-io/milvus-sdk-go/v2/entity"
 )
 
 const (
@@ -77,12 +81,49 @@ type milvusRawHit struct {
 	Score float64
 }
 
+type milvusSDKClient interface {
+	Count(ctx context.Context, collection string) (map[string]string, error)
+	Search(ctx context.Context, req milvusSDKSearchRequest) ([]milvusSDKSearchResult, error)
+	Close(ctx context.Context) error
+}
+
+type milvusSDKSearchRequest struct {
+	Collection  string
+	IDField     string
+	VectorField string
+	QueryVector []float32
+	Limit       int
+	Metric      string
+	Params      map[string]string
+}
+
+type milvusSDKSearchResult struct {
+	IDs    []string
+	Scores []float32
+}
+
+type milvusSDKClientFactory func(ctx context.Context, address string) (milvusSDKClient, error)
+
 type milvusSDKDB struct {
 	address string
+	factory milvusSDKClientFactory
+	client  milvusSDKClient
 }
 
 func newMilvusSDKDB(address string) *milvusSDKDB {
-	return &milvusSDKDB{address: address}
+	return newMilvusSDKAdapterWithClientFactory(address, newRealMilvusSDKClient)
+}
+
+func newMilvusSDKAdapterWithClientFactory(address string, factory milvusSDKClientFactory) *milvusSDKDB {
+	return &milvusSDKDB{address: address, factory: factory}
+}
+
+func newRealMilvusSDKClient(ctx context.Context, address string) (milvusSDKClient, error) {
+	client, err := milvusclient.NewClient(ctx, milvusclient.Config{Address: address})
+	if err != nil {
+		return nil, err
+	}
+	return realMilvusSDKClient{client: client}, nil
 }
 
 func (db *milvusSDKDB) Connect(ctx context.Context) error {
@@ -92,6 +133,14 @@ func (db *milvusSDKDB) Connect(ctx context.Context) error {
 	if db.address == "" {
 		return errors.New("milvus address is required")
 	}
+	if db.factory == nil {
+		db.factory = newRealMilvusSDKClient
+	}
+	client, err := db.factory(ctx, db.address)
+	if err != nil {
+		return err
+	}
+	db.client = client
 	return nil
 }
 
@@ -99,18 +148,141 @@ func (db *milvusSDKDB) Count(ctx context.Context, collection string) (int64, err
 	if err := ctx.Err(); err != nil {
 		return 0, err
 	}
-	return 0, errors.New("real Milvus count adapter is not implemented yet")
+	if db.client == nil {
+		return 0, errors.New("milvus client is not connected")
+	}
+	stats, err := db.client.Count(ctx, collection)
+	if err != nil {
+		return 0, err
+	}
+	rowCount, ok := stats["row_count"]
+	if !ok {
+		return 0, errors.New("milvus stats missing row_count")
+	}
+	count, err := strconv.ParseInt(rowCount, 10, 64)
+	if err != nil {
+		return 0, fmt.Errorf("parse milvus row_count %q: %w", rowCount, err)
+	}
+	return count, nil
 }
 
 func (db *milvusSDKDB) Search(ctx context.Context, req milvusSearchRequest) ([]milvusRawHit, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
-	return nil, errors.New("real Milvus search adapter is not implemented yet")
+	if db.client == nil {
+		return nil, errors.New("milvus client is not connected")
+	}
+	queryVector := make([]float32, len(req.QueryVector))
+	for index, value := range req.QueryVector {
+		queryVector[index] = float32(value)
+	}
+	results, err := db.client.Search(ctx, milvusSDKSearchRequest{
+		Collection:  req.Collection,
+		IDField:     req.IDField,
+		VectorField: req.VectorField,
+		QueryVector: queryVector,
+		Limit:       req.Limit,
+		Metric:      req.Metric,
+		Params:      cloneStringMap(req.Params),
+	})
+	if err != nil {
+		return nil, err
+	}
+	if len(results) != 1 {
+		return nil, fmt.Errorf("expected one milvus result set, got %d", len(results))
+	}
+	result := results[0]
+	if len(result.IDs) != len(result.Scores) {
+		return nil, fmt.Errorf("milvus result ids length %d does not match scores length %d", len(result.IDs), len(result.Scores))
+	}
+	hits := make([]milvusRawHit, len(result.IDs))
+	for index, id := range result.IDs {
+		hits[index] = milvusRawHit{ID: id, Score: float64(result.Scores[index])}
+	}
+	return hits, nil
 }
 
 func (db *milvusSDKDB) Close() error {
+	if db.client == nil {
+		return nil
+	}
+	err := db.client.Close(context.Background())
+	db.client = nil
+	return err
+}
+
+type realMilvusSDKClient struct {
+	client milvusclient.Client
+}
+
+func (c realMilvusSDKClient) Count(ctx context.Context, collection string) (map[string]string, error) {
+	return c.client.GetCollectionStatistics(ctx, collection)
+}
+
+func (c realMilvusSDKClient) Search(ctx context.Context, req milvusSDKSearchRequest) ([]milvusSDKSearchResult, error) {
+	searchParam, err := entity.NewIndexFlatSearchParam()
+	if err != nil {
+		return nil, err
+	}
+	resultSets, err := c.client.Search(
+		ctx,
+		req.Collection,
+		nil,
+		"",
+		[]string{req.IDField},
+		[]entity.Vector{entity.FloatVector(req.QueryVector)},
+		req.VectorField,
+		typeMilvusMetric(req.Metric),
+		req.Limit,
+		searchParam,
+	)
+	if err != nil {
+		return nil, err
+	}
+	results := make([]milvusSDKSearchResult, len(resultSets))
+	for resultIndex, resultSet := range resultSets {
+		ids, err := stringIDsFromMilvusColumn(resultSet.Fields.GetColumn(req.IDField))
+		if err != nil {
+			return nil, err
+		}
+		results[resultIndex] = milvusSDKSearchResult{IDs: ids, Scores: append([]float32(nil), resultSet.Scores...)}
+	}
+	return results, nil
+}
+
+func (c realMilvusSDKClient) Close(ctx context.Context) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	c.client.Close()
 	return nil
+}
+
+func stringIDsFromMilvusColumn(idColumn entity.Column) ([]string, error) {
+	if idColumn == nil {
+		return nil, errors.New("milvus result missing id field")
+	}
+	ids := make([]string, idColumn.Len())
+	for index := range ids {
+		id, err := idColumn.GetAsString(index)
+		if err != nil {
+			return nil, fmt.Errorf("read milvus id at index %d: %w", index, err)
+		}
+		ids[index] = id
+	}
+	return ids, nil
+}
+
+func typeMilvusMetric(metric string) entity.MetricType {
+	switch metric {
+	case MilvusMetricL2:
+		return entity.L2
+	case MilvusMetricIP:
+		return entity.IP
+	default:
+		return entity.COSINE
+	}
 }
 
 // NewMilvusConnector validates configuration and returns a minimal Milvus

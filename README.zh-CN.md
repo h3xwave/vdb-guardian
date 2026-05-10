@@ -54,7 +54,7 @@ Python 检索行为指纹算法引擎
 - 类型化 YAML 任务配置加载与校验：`internal/config`；
 - 向量数据库连接器接口：`internal/connectors`；
 - memory connector：`internal/connectors`；
-- 最小 Milvus connector：`internal/connectors`；
+- 最小 Milvus connector 与真实 Go SDK adapter：`internal/connectors`；
 - 最小 pgvector connector：`internal/connectors`；
 - 本地 offline verification pipeline：`internal/pipeline`；
 - offline-verify fixture CLI 命令；
@@ -84,7 +84,7 @@ Python 检索行为指纹算法引擎
 
 以下能力在 roadmap 中，当前还不是已完成功能：
 
-- Milvus 真实 SDK adapter、真实数据库写入 CLI 与集成测试；
+- Milvus 真实数据库写入 CLI 与集成测试；
 - pgvector seed CLI 针对本地 migration stack 的集成测试；
 - 真实迁移与对比 CLI；
 - HTTP API 路由；
@@ -194,7 +194,7 @@ docs/memory-connector.md
 internal/connectors
 ```
 
-它会校验 Milvus 配置、规范化源库检索结果，并把真实 Milvus SDK 调用隔离在 adapter 边界后面，供后续迁移 MVP 接入。
+它会校验 Milvus 配置，通过真实 Milvus Go SDK adapter 执行连接、collection 统计和向量检索，并把 SDK 调用隔离在 adapter 边界后面，供后续迁移 MVP 接入。
 
 详细说明见：
 

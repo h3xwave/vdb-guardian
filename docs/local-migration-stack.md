@@ -172,6 +172,14 @@ python -m json.tool /tmp/vdb-guardian-target-fingerprint.json >/dev/null
 
 For the committed small fixture, the expected artifact contains `10` query fingerprints.
 
+## Milvus connector smoke check
+
+After the Milvus standalone service is healthy, the real Milvus Go SDK adapter can connect to the local endpoint at `localhost:19530`. Until the Milvus seeding CLI exists, this validates connection and SDK wiring only; count/search need a prepared collection.
+
+```bash
+scripts/check-migration-stack.sh milvus-port
+```
+
 ## Current limitations
 
-This stack now supports validating the pgvector target-side seed, search, and fingerprint artifact loops. It does not yet seed Milvus, run Milvus-to-pgvector migrations, or execute the full migrate-and-verify workflow. Those capabilities will be added in the migration MVP steps that follow.
+This stack now supports validating the pgvector target-side seed, search, and fingerprint artifact loops, plus Milvus port readiness for the real SDK connector. It does not yet seed Milvus, run Milvus-to-pgvector migrations, or execute the full migrate-and-verify workflow. Those capabilities will be added in the migration MVP steps that follow.

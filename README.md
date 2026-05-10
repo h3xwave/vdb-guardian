@@ -25,7 +25,7 @@ Implemented in this scaffold:
 - Typed YAML job configuration loader and validator.
 - Vector database connector interface.
 - Memory connector for deterministic local verification.
-- Minimal Milvus connector for migration MVP source-side search.
+- Minimal Milvus connector with real Go SDK adapter for migration MVP source-side search.
 - Minimal pgvector connector for migration MVP target-side search.
 - Local offline verification pipeline.
 - Offline verify fixture CLI command.
@@ -49,7 +49,7 @@ Implemented in this scaffold:
 
 Planned but not yet implemented:
 
-- Milvus real SDK adapter, real database seeding CLI, and integration tests.
+- Milvus real database seeding CLI and integration tests.
 - pgvector seed CLI integration tests against the local migration stack.
 - Real migration and verification CLI command.
 - API routes.
