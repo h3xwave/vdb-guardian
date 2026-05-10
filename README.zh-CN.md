@@ -53,6 +53,8 @@ Python 检索行为指纹算法引擎
 - 类型化 YAML 任务配置加载与校验：`internal/config`；
 - 向量数据库连接器接口：`internal/connectors`；
 - 指纹引擎接口：`internal/engine`；
+- Python 子进程引擎 Runner；
+- Go / Python JSON 引擎协议；
 - 内存 Artifact Store：`internal/artifacts`；
 - Python 指纹算法包：`python/vdb_fingerprint_engine`；
 - 边界候选集合选择；
@@ -124,6 +126,15 @@ cd python
 uv sync
 uv run pytest
 uv run python -m vdb_fingerprint_engine.cli --version
+```
+
+### 6. Python 引擎协议冒烟检查
+
+```bash
+cd python
+printf '{"job_id":"job-1","source_fingerprint_path":"source.json","target_fingerprint_path":"target.json"}' > /tmp/vdb-engine-input.json
+uv run python -m vdb_fingerprint_engine.cli compare --input /tmp/vdb-engine-input.json --output /tmp/vdb-engine-output.json
+cat /tmp/vdb-engine-output.json
 ```
 
 ## 本地开发要求
@@ -316,11 +327,11 @@ feat(engine): add boundary candidate metrics
 
 ### Phase 2：配置和本地任务执行
 
-- [ ] 类型化 Job 配置加载；
-- [ ] 配置校验；
-- [ ] 本地 artifact store；
-- [ ] Python subprocess engine runner；
-- [ ] JSON 输入输出协议。
+- [x] 类型化 Job 配置加载；
+- [x] 配置校验；
+- [x] 本地 artifact store；
+- [x] Python subprocess engine runner；
+- [x] JSON 输入输出协议。
 
 ### Phase 3：Milvus 到 pgvector 实验链路
 

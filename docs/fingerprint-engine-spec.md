@@ -21,4 +21,16 @@ The engine returns normalized values in `[0, 1]` where possible. Lower fingerpri
 
 ## Protocol direction
 
-The Go control plane will provide artifact paths or JSON payloads. The Python engine will return a compact JSON summary and write detailed artifacts through the artifact boundary.
+The Go control plane invokes the Python engine with a subprocess runner and a JSON file protocol:
+
+```text
+python -m vdb_fingerprint_engine.cli compare --input input.json --output output.json
+```
+
+The Python engine returns a compact JSON summary and will write detailed artifacts through the artifact boundary in later phases.
+
+See `docs/engine-protocol.md` for the current schema.
+
+## Current compare command
+
+The current `compare` command validates input/output wiring and returns neutral perfect-consistency metrics. It does not yet read source and target fingerprint artifacts. Artifact-backed comparison is the next algorithm implementation step.

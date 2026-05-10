@@ -22,6 +22,7 @@ Go owns enterprise reliability concerns:
 - Connector interfaces.
 - Artifact storage abstraction.
 - Engine invocation boundary.
+- Python subprocess runner using a stable JSON protocol.
 - Future observability and deployment hooks.
 
 Python owns algorithm velocity:
@@ -37,7 +38,7 @@ Python owns algorithm velocity:
 - `internal/jobs`: durable job lifecycle states.
 - `internal/config`: typed YAML job configuration loading and validation.
 - `internal/connectors`: normalized vector database connector contract.
-- `internal/engine`: Go-to-engine comparison contract.
+- `internal/engine`: Go-to-engine comparison contract and Python subprocess runner.
 - `internal/artifacts`: storage abstraction for fingerprints, reports, and intermediate files.
 - `python/vdb_fingerprint_engine`: retrieval behavior fingerprint algorithms.
 

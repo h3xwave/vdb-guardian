@@ -24,8 +24,10 @@ Implemented in this scaffold:
 - Typed YAML job configuration loader and validator.
 - Vector database connector interface.
 - Fingerprint engine interface.
+- Python subprocess engine runner.
 - In-memory artifact store.
 - Python boundary candidate selection.
+- Python compare CLI using the Go/Python JSON engine protocol.
 - Python Jaccard distance, boundary flip rate, and weighted fingerprint distance.
 - Unit tests for all implemented methods.
 - Makefile quality gates.
@@ -81,6 +83,17 @@ uv run ruff check .
 go run ./cmd/vdbg --version
 go run ./cmd/vdb-guardian-server
 ```
+
+## Engine protocol
+
+The Go control plane can invoke the Python fingerprint engine through `internal/engine.PythonRunner`. The current subprocess command is:
+
+```bash
+cd python
+uv run python -m vdb_fingerprint_engine.cli compare --input /tmp/vdb-engine-input.json --output /tmp/vdb-engine-output.json
+```
+
+See `docs/engine-protocol.md` for the JSON input/output contract. The current compare command validates the protocol and returns neutral metrics; artifact-backed comparison is planned for the next implementation step.
 
 ## Configuration examples
 

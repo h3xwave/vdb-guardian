@@ -32,6 +32,17 @@ Configuration changes must update:
 
 Run `go test ./internal/config` during TDD and `make test` before committing.
 
+## Engine protocol development
+
+Go/Python engine protocol changes must update:
+
+- `internal/engine` runner tests.
+- `python/vdb_fingerprint_engine` schemas and CLI tests.
+- `docs/engine-protocol.md`.
+- README files when user-facing commands change.
+
+Run `go test ./internal/engine`, `cd python && uv run pytest tests/test_cli.py`, and `make test` before committing.
+
 ## Progress reporting
 
 Report progress at phase boundaries:
