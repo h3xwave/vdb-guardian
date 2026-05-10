@@ -104,7 +104,7 @@ CLI changes must update:
 - user-facing command documentation under `docs/`.
 - README files when command names, arguments, or smoke checks change.
 
-Run `go test ./cmd/vdbg`, the documented smoke command when practical, `make test`, and `git diff --check` before committing.
+Run `go test ./cmd/vdbg`, the documented smoke command when practical, `make test`, and `git diff --check` before committing. Database-writing CLI commands should have injected adapter tests first; real Docker/database smoke tests require explicit operator approval before starting services.
 
 ## Progress reporting
 

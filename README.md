@@ -32,6 +32,7 @@ Implemented in this scaffold:
 - Local Milvus and pgvector migration Docker Compose stack.
 - Milvus synthetic fixture seeding.
 - pgvector synthetic fixture seeding.
+- `vdbg seed-pgvector` real pgvector fixture seeding CLI.
 - Synthetic vector dataset generator.
 - Fingerprint artifact builder.
 - Fingerprint engine interface.
@@ -47,7 +48,7 @@ Implemented in this scaffold:
 Planned but not yet implemented:
 
 - Milvus real SDK adapter, real database seeding CLI, and integration tests.
-- pgvector real database seeding CLI and integration tests.
+- pgvector seed CLI integration tests against the local migration stack.
 - Real migration and verification CLI command.
 - API routes.
 - Persistent job storage.
@@ -97,6 +98,7 @@ go run ./cmd/vdbg --version
 go run ./cmd/vdb-guardian-server
 go run ./cmd/vdbg offline-verify --fixture testdata/offline/basic.json --artifact-dir /tmp/vdb-guardian-offline
 go run ./cmd/vdbg generate-synthetic-fixture --output testdata/migration/synthetic-small.json --seed 42 --dimension 8 --records 100 --queries 10 --metric cosine
+go run ./cmd/vdbg seed-pgvector --fixture testdata/migration/synthetic-small.json --connection-url '[REDACTED]'
 ```
 
 ## Engine protocol
@@ -184,7 +186,18 @@ See `docs/milvus-fixture-seeding.md` for adapter behavior, validation rules, and
 
 The pgvector fixture seeder lives in `internal/migration`. It creates the pgvector extension/table and upserts deterministic synthetic records through an injected database adapter.
 
-See `docs/pgvector-fixture-seeding.md` for SQL behavior, validation rules, and current limitations.
+The `vdbg seed-pgvector` command wires that seeder to a real pgx-backed PostgreSQL connection:
+
+```bash
+go run ./cmd/vdbg seed-pgvector \
+  --fixture testdata/migration/synthetic-small.json \
+  --connection-url '[REDACTED]' \
+  --table items \
+  --id-column id \
+  --vector-column embedding
+```
+
+See `docs/pgvector-fixture-seeding.md` for SQL behavior and validation rules. See `docs/seed-pgvector-cli.md` for the real database CLI workflow and current integration-test limitations.
 
 ## Synthetic vector fixtures
 

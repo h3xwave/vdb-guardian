@@ -61,6 +61,7 @@ Python 检索行为指纹算法引擎
 - 本地 Milvus / pgvector migration Docker Compose 环境；
 - Milvus 合成 fixture 写入器；
 - pgvector 合成 fixture 写入器；
+- `vdbg seed-pgvector` 真实 pgvector fixture 写入 CLI；
 - 合成向量数据生成器；
 - 指纹 artifact builder：`internal/fingerprints`；
 - 指纹引擎接口：`internal/engine`；
@@ -82,7 +83,7 @@ Python 检索行为指纹算法引擎
 以下能力在 roadmap 中，当前还不是已完成功能：
 
 - Milvus 真实 SDK adapter、真实数据库写入 CLI 与集成测试；
-- pgvector 真实数据库写入 CLI 与集成测试；
+- pgvector seed CLI 针对本地 migration stack 的集成测试；
 - 真实迁移与对比 CLI；
 - HTTP API 路由；
 - 持久化 Job Store；
@@ -319,7 +320,7 @@ internal/migration
 docs/milvus-fixture-seeding.md
 ```
 
-### 17. pgvector Fixture 写入器
+### 17. pgvector Fixture 写入器与真实写入 CLI
 
 pgvector fixture 写入器位于：
 
@@ -327,12 +328,22 @@ pgvector fixture 写入器位于：
 internal/migration
 ```
 
-它负责创建 pgvector extension/table，并通过 adapter upsert 合成 records。当前为可单元测试的写入逻辑，真实数据库 CLI 和集成测试仍在后续步骤。
+它负责创建 pgvector extension/table，并通过 adapter upsert 合成 records。`vdbg seed-pgvector` 已将该写入器接到真实 pgx PostgreSQL 连接：
+
+```bash
+go run ./cmd/vdbg seed-pgvector \
+  --fixture testdata/migration/synthetic-small.json \
+  --connection-url '[REDACTED]' \
+  --table items \
+  --id-column id \
+  --vector-column embedding
+```
 
 详细说明见：
 
 ```text
 docs/pgvector-fixture-seeding.md
+docs/seed-pgvector-cli.md
 ```
 
 ### 18. 合成向量 Fixture
