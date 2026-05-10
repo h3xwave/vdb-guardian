@@ -186,7 +186,26 @@ go run ./cmd/vdbg seed-milvus \
   --metric cosine
 ```
 
-For the committed small fixture, the expected row count is `100` and the vector dimension is `8`. A later Milvus search smoke CLI will verify read-path retrieval against this collection.
+For the committed small fixture, the expected row count is `100` and the vector dimension is `8`.
+
+## Milvus search smoke check
+
+After the Milvus seed smoke check succeeds, the source-side read path can be verified with:
+
+```bash
+go run ./cmd/vdbg search-milvus \
+  --fixture testdata/migration/synthetic-small.json \
+  --address localhost:19530 \
+  --collection items \
+  --id-field id \
+  --vector-field embedding \
+  --top-k 3 \
+  --expand-k 5 \
+  --query-index 0 \
+  --metric cosine
+```
+
+For the committed small fixture, the expected row count is `100` and the command should print `5` hits when `--expand-k 5` is used.
 
 ## Milvus connector smoke check
 
@@ -198,4 +217,4 @@ scripts/check-migration-stack.sh milvus-port
 
 ## Current limitations
 
-This stack now supports validating the pgvector target-side seed, search, and fingerprint artifact loops, plus source-side Milvus fixture seeding. It does not yet run Milvus-to-pgvector migrations or execute the full migrate-and-verify workflow. Those capabilities will be added in the migration MVP steps that follow.
+This stack now supports validating the pgvector target-side seed, search, and fingerprint artifact loops, plus source-side Milvus fixture seeding and search. It does not yet run Milvus-to-pgvector migrations or execute the full migrate-and-verify workflow. Those capabilities will be added in the migration MVP steps that follow.

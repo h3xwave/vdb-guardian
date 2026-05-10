@@ -61,6 +61,7 @@ Python 检索行为指纹算法引擎
 - 本地 Milvus / pgvector migration Docker Compose 环境；
 - Milvus 合成 fixture 写入器；
 - `vdbg seed-milvus` 真实 Milvus fixture 写入 CLI；
+- `vdbg search-milvus` 真实 Milvus 检索冒烟 CLI；
 - pgvector 合成 fixture 写入器；
 - `vdbg seed-pgvector` 真实 pgvector fixture 写入 CLI；
 - `vdbg search-pgvector` 真实 pgvector 检索冒烟 CLI；
@@ -334,7 +335,30 @@ docs/milvus-fixture-seeding.md
 docs/seed-milvus-cli.md
 ```
 
-### 17. pgvector Fixture 写入器与真实写入 CLI
+### 17. Milvus 检索冒烟 CLI
+
+`vdbg search-milvus` 会复用真实 Milvus connector，对已写入的 collection 执行记录数统计和单个 fixture query 的向量检索：
+
+```bash
+go run ./cmd/vdbg search-milvus \
+  --fixture testdata/migration/synthetic-small.json \
+  --address localhost:19530 \
+  --collection items \
+  --id-field id \
+  --vector-field embedding \
+  --top-k 3 \
+  --expand-k 5 \
+  --query-index 0 \
+  --metric cosine
+```
+
+详细说明见：
+
+```text
+docs/search-milvus-cli.md
+```
+
+### 18. pgvector Fixture 写入器与真实写入 CLI
 
 pgvector fixture 写入器位于：
 

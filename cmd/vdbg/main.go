@@ -45,6 +45,13 @@ func main() {
 		}
 		return
 	}
+	if len(os.Args) > 1 && os.Args[1] == "search-milvus" {
+		if err := runSearchMilvusCommand(context.Background(), os.Args[2:]); err != nil {
+			fmt.Fprintf(os.Stderr, "search-milvus failed: %v\n", err)
+			os.Exit(1)
+		}
+		return
+	}
 	if len(os.Args) > 1 && os.Args[1] == "search-pgvector" {
 		if err := runSearchPGVectorCommand(context.Background(), os.Args[2:]); err != nil {
 			fmt.Fprintf(os.Stderr, "search-pgvector failed: %v\n", err)

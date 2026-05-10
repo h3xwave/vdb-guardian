@@ -32,6 +32,7 @@ Implemented in this scaffold:
 - Local Milvus and pgvector migration Docker Compose stack.
 - Milvus synthetic fixture seeding.
 - `vdbg seed-milvus` real Milvus fixture seeding CLI.
+- `vdbg search-milvus` real Milvus search smoke CLI.
 - pgvector synthetic fixture seeding.
 - `vdbg seed-pgvector` real pgvector fixture seeding CLI.
 - `vdbg search-pgvector` real pgvector search smoke CLI.
@@ -102,6 +103,7 @@ go run ./cmd/vdb-guardian-server
 go run ./cmd/vdbg offline-verify --fixture testdata/offline/basic.json --artifact-dir /tmp/vdb-guardian-offline
 go run ./cmd/vdbg generate-synthetic-fixture --output testdata/migration/synthetic-small.json --seed 42 --dimension 8 --records 100 --queries 10 --metric cosine
 go run ./cmd/vdbg seed-milvus --fixture testdata/migration/synthetic-small.json --address localhost:19530
+go run ./cmd/vdbg search-milvus --fixture testdata/migration/synthetic-small.json --address localhost:19530 --top-k 3 --expand-k 5
 go run ./cmd/vdbg seed-pgvector --fixture testdata/migration/synthetic-small.json --connection-url '[REDACTED]'
 go run ./cmd/vdbg search-pgvector --fixture testdata/migration/synthetic-small.json --connection-url '[REDACTED]' --top-k 3 --expand-k 5
 go run ./cmd/vdbg build-pgvector-artifact --fixture testdata/migration/synthetic-small.json --connection-url '[REDACTED]' --output /tmp/vdb-guardian-target-fingerprint.json --top-k 3 --expand-k 5 --stable-k 2 --boundary-k 1
@@ -199,6 +201,25 @@ go run ./cmd/vdbg seed-milvus \
 ```
 
 See `docs/milvus-fixture-seeding.md` for adapter behavior and validation rules. See `docs/seed-milvus-cli.md` for the real database CLI workflow and current limitations.
+
+## Milvus search smoke
+
+The `vdbg search-milvus` command reuses the real Milvus connector to count seeded rows and search one query vector from a synthetic fixture:
+
+```bash
+go run ./cmd/vdbg search-milvus \
+  --fixture testdata/migration/synthetic-small.json \
+  --address localhost:19530 \
+  --collection items \
+  --id-field id \
+  --vector-field embedding \
+  --top-k 3 \
+  --expand-k 5 \
+  --query-index 0 \
+  --metric cosine
+```
+
+See `docs/search-milvus-cli.md` for the source-side read smoke workflow and limitations.
 
 ## pgvector fixture seeding
 
