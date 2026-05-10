@@ -60,6 +60,7 @@ Python 检索行为指纹算法引擎
 - offline-verify fixture CLI 命令；
 - 本地 Milvus / pgvector migration Docker Compose 环境；
 - Milvus 合成 fixture 写入器；
+- `vdbg seed-milvus` 真实 Milvus fixture 写入 CLI；
 - pgvector 合成 fixture 写入器；
 - `vdbg seed-pgvector` 真实 pgvector fixture 写入 CLI；
 - `vdbg search-pgvector` 真实 pgvector 检索冒烟 CLI；
@@ -84,7 +85,7 @@ Python 检索行为指纹算法引擎
 
 以下能力在 roadmap 中，当前还不是已完成功能：
 
-- Milvus 真实数据库写入 CLI 与集成测试；
+- Milvus seed CLI 针对本地 migration stack 的集成测试；
 - pgvector seed CLI 针对本地 migration stack 的集成测试；
 - 真实迁移与对比 CLI；
 - HTTP API 路由；
@@ -314,12 +315,23 @@ Milvus fixture 写入器位于：
 internal/migration
 ```
 
-它负责准备最小 collection 边界，并通过 adapter 插入合成 records。当前为可单元测试的写入逻辑，真实 Milvus SDK adapter、数据库 CLI 和集成测试仍在后续步骤。
+它负责准备最小 collection 边界，并通过 adapter 插入合成 records。`vdbg seed-milvus` 已将该写入器接到真实 Milvus Go SDK 连接：
+
+```bash
+go run ./cmd/vdbg seed-milvus \
+  --fixture testdata/migration/synthetic-small.json \
+  --address localhost:19530 \
+  --collection items \
+  --id-field id \
+  --vector-field embedding \
+  --metric cosine
+```
 
 详细说明见：
 
 ```text
 docs/milvus-fixture-seeding.md
+docs/seed-milvus-cli.md
 ```
 
 ### 17. pgvector Fixture 写入器与真实写入 CLI

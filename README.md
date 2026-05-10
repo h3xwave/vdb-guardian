@@ -31,6 +31,7 @@ Implemented in this scaffold:
 - Offline verify fixture CLI command.
 - Local Milvus and pgvector migration Docker Compose stack.
 - Milvus synthetic fixture seeding.
+- `vdbg seed-milvus` real Milvus fixture seeding CLI.
 - pgvector synthetic fixture seeding.
 - `vdbg seed-pgvector` real pgvector fixture seeding CLI.
 - `vdbg search-pgvector` real pgvector search smoke CLI.
@@ -49,7 +50,7 @@ Implemented in this scaffold:
 
 Planned but not yet implemented:
 
-- Milvus real database seeding CLI and integration tests.
+- Milvus seed CLI integration tests against the local migration stack.
 - pgvector seed CLI integration tests against the local migration stack.
 - Real migration and verification CLI command.
 - API routes.
@@ -100,6 +101,7 @@ go run ./cmd/vdbg --version
 go run ./cmd/vdb-guardian-server
 go run ./cmd/vdbg offline-verify --fixture testdata/offline/basic.json --artifact-dir /tmp/vdb-guardian-offline
 go run ./cmd/vdbg generate-synthetic-fixture --output testdata/migration/synthetic-small.json --seed 42 --dimension 8 --records 100 --queries 10 --metric cosine
+go run ./cmd/vdbg seed-milvus --fixture testdata/migration/synthetic-small.json --address localhost:19530
 go run ./cmd/vdbg seed-pgvector --fixture testdata/migration/synthetic-small.json --connection-url '[REDACTED]'
 go run ./cmd/vdbg search-pgvector --fixture testdata/migration/synthetic-small.json --connection-url '[REDACTED]' --top-k 3 --expand-k 5
 go run ./cmd/vdbg build-pgvector-artifact --fixture testdata/migration/synthetic-small.json --connection-url '[REDACTED]' --output /tmp/vdb-guardian-target-fingerprint.json --top-k 3 --expand-k 5 --stable-k 2 --boundary-k 1
@@ -184,7 +186,19 @@ See `docs/local-migration-stack.md` for ports, local-only credentials, health ch
 
 The Milvus fixture seeder lives in `internal/migration`. It prepares a minimal collection boundary and inserts deterministic synthetic records through an injected database adapter.
 
-See `docs/milvus-fixture-seeding.md` for adapter behavior, validation rules, and current limitations.
+The `vdbg seed-milvus` command wires that seeder to a real Milvus Go SDK connection:
+
+```bash
+go run ./cmd/vdbg seed-milvus \
+  --fixture testdata/migration/synthetic-small.json \
+  --address localhost:19530 \
+  --collection items \
+  --id-field id \
+  --vector-field embedding \
+  --metric cosine
+```
+
+See `docs/milvus-fixture-seeding.md` for adapter behavior and validation rules. See `docs/seed-milvus-cli.md` for the real database CLI workflow and current limitations.
 
 ## pgvector fixture seeding
 

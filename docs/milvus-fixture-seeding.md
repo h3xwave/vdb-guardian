@@ -10,19 +10,17 @@ Implemented capabilities:
 - Validate synthetic fixture dimensions and record vectors.
 - Create a minimal collection boundary through an injected adapter.
 - Insert synthetic records through an injected adapter.
+- Seed a real Milvus collection through the `vdbg seed-milvus` CLI and Milvus Go SDK.
 - Return a structured summary with collection, dimension, and record counts.
 
 Not yet implemented:
 
-- Real Milvus Go SDK adapter.
-- CLI command for real database seeding.
 - Docker integration tests against the migration stack.
-- Collection index creation.
-- Collection loading orchestration.
 - Partitions or metadata fields.
 - Query vector insertion.
+- Production bulk import path.
 
-The first version is intentionally adapter-driven so seeding behavior can be unit-tested without starting Docker or connecting to Milvus.
+The seeding logic remains adapter-driven so behavior can be unit-tested without starting Docker or connecting to Milvus. The real CLI uses the Milvus Go SDK behind that adapter boundary.
 
 ## API
 
@@ -63,6 +61,18 @@ The seeder calls the injected adapter in this order:
 ```text
 CreateCollection(collection, id_field, vector_field, dimension, metric)
 InsertRecords(collection, id_field, vector_field, records)
+```
+
+The real SDK adapter expands that boundary into:
+
+```text
+HasCollection
+DropCollection, when present
+CreateCollection, VarChar primary key + FloatVector field
+CreateIndex, FLAT with cosine or L2
+LoadCollection
+Insert, columnar id/vector columns
+Flush
 ```
 
 Records are copied before they are passed to the adapter so later caller-side mutation of the fixture does not change the inserted batch representation.

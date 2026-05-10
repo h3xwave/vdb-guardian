@@ -172,9 +172,25 @@ python -m json.tool /tmp/vdb-guardian-target-fingerprint.json >/dev/null
 
 For the committed small fixture, the expected artifact contains `10` query fingerprints.
 
+## Milvus seed smoke check
+
+After the Milvus standalone service is healthy, seed the source-side fixture collection through the real Milvus Go SDK adapter:
+
+```bash
+go run ./cmd/vdbg seed-milvus \
+  --fixture testdata/migration/synthetic-small.json \
+  --address localhost:19530 \
+  --collection items \
+  --id-field id \
+  --vector-field embedding \
+  --metric cosine
+```
+
+For the committed small fixture, the expected row count is `100` and the vector dimension is `8`. A later Milvus search smoke CLI will verify read-path retrieval against this collection.
+
 ## Milvus connector smoke check
 
-After the Milvus standalone service is healthy, the real Milvus Go SDK adapter can connect to the local endpoint at `localhost:19530`. Until the Milvus seeding CLI exists, this validates connection and SDK wiring only; count/search need a prepared collection.
+The low-level Milvus readiness check validates that the gRPC SDK endpoint is reachable:
 
 ```bash
 scripts/check-migration-stack.sh milvus-port
@@ -182,4 +198,4 @@ scripts/check-migration-stack.sh milvus-port
 
 ## Current limitations
 
-This stack now supports validating the pgvector target-side seed, search, and fingerprint artifact loops, plus Milvus port readiness for the real SDK connector. It does not yet seed Milvus, run Milvus-to-pgvector migrations, or execute the full migrate-and-verify workflow. Those capabilities will be added in the migration MVP steps that follow.
+This stack now supports validating the pgvector target-side seed, search, and fingerprint artifact loops, plus source-side Milvus fixture seeding. It does not yet run Milvus-to-pgvector migrations or execute the full migrate-and-verify workflow. Those capabilities will be added in the migration MVP steps that follow.
