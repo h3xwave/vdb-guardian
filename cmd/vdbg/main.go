@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -14,6 +15,13 @@ func main() {
 	info := version.Info()
 	if len(os.Args) > 1 && os.Args[1] == "--version" {
 		fmt.Printf("%s %s\n", info.Name, info.Version)
+		return
+	}
+	if len(os.Args) > 1 && os.Args[1] == "offline-verify" {
+		if err := runOfflineVerifyCommand(context.Background(), os.Args[2:]); err != nil {
+			fmt.Fprintf(os.Stderr, "offline-verify failed: %v\n", err)
+			os.Exit(1)
+		}
 		return
 	}
 

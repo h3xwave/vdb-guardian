@@ -26,6 +26,7 @@ Implemented in this scaffold:
 - Vector database connector interface.
 - Memory connector for deterministic local verification.
 - Local offline verification pipeline.
+- Offline verify fixture CLI command.
 - Fingerprint artifact builder.
 - Fingerprint engine interface.
 - Python subprocess engine runner.
@@ -87,6 +88,7 @@ uv run ruff check .
 ```bash
 go run ./cmd/vdbg --version
 go run ./cmd/vdb-guardian-server
+go run ./cmd/vdbg offline-verify --fixture testdata/offline/basic.json --artifact-dir /tmp/vdb-guardian-offline
 ```
 
 ## Engine protocol
@@ -127,6 +129,12 @@ See `docs/local-verification-runner.md` for the current workflow and limitations
 The local offline pipeline lives in `internal/pipeline`. It connects source and target connectors, fingerprint artifact building, and the verification runner into a database-free end-to-end verification path.
 
 See `docs/local-offline-pipeline.md` for the workflow, generated artifacts, and current limitations.
+
+## Offline verify fixture command
+
+The `vdbg offline-verify` command runs the local offline pipeline from a JSON fixture and writes fingerprint/result artifacts without Docker or real databases.
+
+See `docs/offline-verify-fixture.md` and `testdata/offline/basic.json` for the fixture format and smoke command.
 
 ## Configuration examples
 

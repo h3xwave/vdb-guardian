@@ -55,6 +55,7 @@ Python 检索行为指纹算法引擎
 - 向量数据库连接器接口：`internal/connectors`；
 - memory connector：`internal/connectors`；
 - 本地 offline verification pipeline：`internal/pipeline`；
+- offline-verify fixture CLI 命令；
 - 指纹 artifact builder：`internal/fingerprints`；
 - 指纹引擎接口：`internal/engine`；
 - Python 子进程引擎 Runner；
@@ -124,7 +125,17 @@ go run ./cmd/vdb-guardian-server
 vdb-guardian server scaffold dev
 ```
 
-### 5. Python 引擎检查
+### 5. Offline Verify fixture 冒烟检查
+
+```bash
+go run ./cmd/vdbg offline-verify \
+  --fixture testdata/offline/basic.json \
+  --artifact-dir /tmp/vdb-guardian-offline
+```
+
+该命令不会连接真实数据库，只会基于 fixture 跑通 memory connector、fingerprint artifact builder、Python engine 和 result artifact 写出流程。
+
+### 6. Python 引擎检查
 
 ```bash
 cd python
@@ -133,7 +144,7 @@ uv run pytest
 uv run python -m vdb_fingerprint_engine.cli --version
 ```
 
-### 6. Python 引擎协议冒烟检查
+### 7. Python 引擎协议冒烟检查
 
 ```bash
 cd python
@@ -150,7 +161,7 @@ cat /tmp/vdb-engine-output.json
 docs/fingerprint-artifact-format.md
 ```
 
-### 7. Memory Connector
+### 8. Memory Connector
 
 Go memory connector 位于：
 
@@ -166,7 +177,7 @@ internal/connectors
 docs/memory-connector.md
 ```
 
-### 8. 指纹 Artifact Builder
+### 9. 指纹 Artifact Builder
 
 Go 指纹 artifact builder 位于：
 
@@ -186,7 +197,7 @@ search results -> source-fingerprint.json / target-fingerprint.json
 docs/fingerprint-artifact-builder.md
 ```
 
-### 9. 本地 Verification Runner
+### 10. 本地 Verification Runner
 
 Go 本地任务 runner 位于：
 
@@ -206,7 +217,7 @@ internal/jobs
 docs/local-verification-runner.md
 ```
 
-### 10. 本地 Offline Pipeline
+### 11. 本地 Offline Pipeline
 
 Go 本地 offline pipeline 位于：
 
@@ -220,6 +231,16 @@ internal/pipeline
 
 ```text
 docs/local-offline-pipeline.md
+```
+
+### 12. Offline Verify Fixture CLI
+
+`vdbg offline-verify` 命令可以从 JSON fixture 跑通无数据库本地验证链路，并写出 source/target fingerprint artifact 与 result artifact。
+
+详细说明见：
+
+```text
+docs/offline-verify-fixture.md
 ```
 
 ## 本地开发要求
@@ -427,6 +448,7 @@ feat(engine): add boundary candidate metrics
 - [x] Search results 到 fingerprint artifact 构建；
 - [x] Memory connector 本地验证；
 - [x] 本地 offline verification pipeline；
+- [x] offline-verify fixture CLI；
 - [ ] Milvus connector；
 - [ ] pgvector connector；
 - [ ] 合成数据生成；

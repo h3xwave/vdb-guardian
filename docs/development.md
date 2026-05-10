@@ -86,6 +86,16 @@ Pipeline changes must update:
 
 Run `go test ./internal/pipeline`, `make test`, and `git diff --check` before committing.
 
+## CLI development
+
+CLI changes must update:
+
+- `cmd/vdbg` command tests.
+- user-facing command documentation under `docs/`.
+- README files when command names, arguments, or smoke checks change.
+
+Run `go test ./cmd/vdbg`, the documented smoke command when practical, `make test`, and `git diff --check` before committing.
+
 ## Progress reporting
 
 Report progress at phase boundaries:
