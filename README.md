@@ -25,6 +25,7 @@ Implemented in this scaffold:
 - Typed YAML job configuration loader and validator.
 - Vector database connector interface.
 - Memory connector for deterministic local verification.
+- Local offline verification pipeline.
 - Fingerprint artifact builder.
 - Fingerprint engine interface.
 - Python subprocess engine runner.
@@ -120,6 +121,12 @@ The Go local verification runner lives in `internal/jobs`. It accepts source and
 ```
 
 See `docs/local-verification-runner.md` for the current workflow and limitations.
+
+## Local offline pipeline
+
+The local offline pipeline lives in `internal/pipeline`. It connects source and target connectors, fingerprint artifact building, and the verification runner into a database-free end-to-end verification path.
+
+See `docs/local-offline-pipeline.md` for the workflow, generated artifacts, and current limitations.
 
 ## Configuration examples
 

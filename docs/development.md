@@ -75,6 +75,17 @@ Fingerprint builder changes must update:
 
 Run `go test ./internal/fingerprints`, `make test`, and `git diff --check` before committing.
 
+## Pipeline development
+
+Pipeline changes must update:
+
+- `internal/pipeline` orchestration tests.
+- connector, fingerprint, or runner docs when their workflow contract changes.
+- `docs/local-offline-pipeline.md`.
+- README files when local verification behavior changes.
+
+Run `go test ./internal/pipeline`, `make test`, and `git diff --check` before committing.
+
 ## Progress reporting
 
 Report progress at phase boundaries:

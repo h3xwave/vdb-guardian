@@ -54,6 +54,7 @@ Python 检索行为指纹算法引擎
 - 类型化 YAML 任务配置加载与校验：`internal/config`；
 - 向量数据库连接器接口：`internal/connectors`；
 - memory connector：`internal/connectors`；
+- 本地 offline verification pipeline：`internal/pipeline`；
 - 指纹 artifact builder：`internal/fingerprints`；
 - 指纹引擎接口：`internal/engine`；
 - Python 子进程引擎 Runner；
@@ -205,6 +206,22 @@ internal/jobs
 docs/local-verification-runner.md
 ```
 
+### 10. 本地 Offline Pipeline
+
+Go 本地 offline pipeline 位于：
+
+```text
+internal/pipeline
+```
+
+它将 source / target connector、fingerprint artifact builder、verification runner 串成无数据库端到端验证链路。
+
+详细说明见：
+
+```text
+docs/local-offline-pipeline.md
+```
+
 ## 本地开发要求
 
 开发前必须阅读：
@@ -286,6 +303,7 @@ vdb-guardian/
 │   ├── engine/
 │   ├── fingerprints/
 │   ├── jobs/
+│   ├── pipeline/
 │   └── version/
 ├── python/
 │   ├── pyproject.toml
@@ -408,6 +426,7 @@ feat(engine): add boundary candidate metrics
 - [x] Artifact-backed 指纹对比；
 - [x] Search results 到 fingerprint artifact 构建；
 - [x] Memory connector 本地验证；
+- [x] 本地 offline verification pipeline；
 - [ ] Milvus connector；
 - [ ] pgvector connector；
 - [ ] 合成数据生成；
