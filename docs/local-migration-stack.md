@@ -130,6 +130,23 @@ docker compose -f deployments/docker-compose.migration.yml exec -T postgres-pgve
 
 For the committed small fixture, the expected row count is `100` and the vector dimension is `8`.
 
+## pgvector search smoke check
+
+After the seed smoke check succeeds, the target-side read path can be verified with:
+
+```bash
+go run ./cmd/vdbg search-pgvector \
+  --fixture testdata/migration/synthetic-small.json \
+  --connection-url '[REDACTED]' \
+  --table items \
+  --top-k 3 \
+  --expand-k 5 \
+  --query-index 0 \
+  --metric cosine
+```
+
+For the committed small fixture, the expected row count is `100` and the command should print `5` hits when `--expand-k 5` is used.
+
 ## Current limitations
 
 This stack now supports validating the pgvector target-side seed loop. It does not yet seed Milvus, run Milvus-to-pgvector migrations, or execute the full migrate-and-verify workflow. Those capabilities will be added in the migration MVP steps that follow.

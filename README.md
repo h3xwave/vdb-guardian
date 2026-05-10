@@ -33,6 +33,7 @@ Implemented in this scaffold:
 - Milvus synthetic fixture seeding.
 - pgvector synthetic fixture seeding.
 - `vdbg seed-pgvector` real pgvector fixture seeding CLI.
+- `vdbg search-pgvector` real pgvector search smoke CLI.
 - Synthetic vector dataset generator.
 - Fingerprint artifact builder.
 - Fingerprint engine interface.
@@ -99,6 +100,7 @@ go run ./cmd/vdb-guardian-server
 go run ./cmd/vdbg offline-verify --fixture testdata/offline/basic.json --artifact-dir /tmp/vdb-guardian-offline
 go run ./cmd/vdbg generate-synthetic-fixture --output testdata/migration/synthetic-small.json --seed 42 --dimension 8 --records 100 --queries 10 --metric cosine
 go run ./cmd/vdbg seed-pgvector --fixture testdata/migration/synthetic-small.json --connection-url '[REDACTED]'
+go run ./cmd/vdbg search-pgvector --fixture testdata/migration/synthetic-small.json --connection-url '[REDACTED]' --top-k 3 --expand-k 5
 ```
 
 ## Engine protocol
@@ -198,6 +200,23 @@ go run ./cmd/vdbg seed-pgvector \
 ```
 
 See `docs/pgvector-fixture-seeding.md` for SQL behavior and validation rules. See `docs/seed-pgvector-cli.md` for the real database CLI workflow and current integration-test limitations.
+
+## pgvector search smoke
+
+The `vdbg search-pgvector` command reuses the real pgvector connector to count seeded rows and search one query vector from a synthetic fixture:
+
+```bash
+go run ./cmd/vdbg search-pgvector \
+  --fixture testdata/migration/synthetic-small.json \
+  --connection-url '[REDACTED]' \
+  --table items \
+  --top-k 3 \
+  --expand-k 5 \
+  --query-index 0 \
+  --metric cosine
+```
+
+See `docs/search-pgvector-cli.md` for the read-only smoke workflow and limitations.
 
 ## Synthetic vector fixtures
 
