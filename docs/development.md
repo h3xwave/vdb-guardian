@@ -19,7 +19,7 @@ git diff --check
 
 Python dependencies are managed with `uv`. Do not use global `pip install` for project dependencies unless you are explicitly repairing the local environment and have documented the reason.
 
-Go dependencies must be added intentionally and kept minimal. YAML configuration loading currently uses `gopkg.in/yaml.v3` because Go has no standard-library YAML parser.
+Go dependencies must be added intentionally and kept minimal. YAML configuration loading currently uses `gopkg.in/yaml.v3` because Go has no standard-library YAML parser. PostgreSQL connectivity for the pgvector connector uses `github.com/jackc/pgx/v5`.
 
 ## Configuration development
 

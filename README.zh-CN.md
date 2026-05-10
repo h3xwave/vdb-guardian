@@ -54,6 +54,7 @@ Python 检索行为指纹算法引擎
 - 类型化 YAML 任务配置加载与校验：`internal/config`；
 - 向量数据库连接器接口：`internal/connectors`；
 - memory connector：`internal/connectors`；
+- 最小 pgvector connector：`internal/connectors`；
 - 本地 offline verification pipeline：`internal/pipeline`；
 - offline-verify fixture CLI 命令；
 - 本地 Milvus / pgvector migration Docker Compose 环境；
@@ -78,7 +79,7 @@ Python 检索行为指纹算法引擎
 以下能力在 roadmap 中，当前还不是已完成功能：
 
 - 真实 Milvus connector；
-- 真实 pgvector connector；
+- pgvector fixture 写入与集成测试；
 - 真实迁移与对比 CLI；
 - HTTP API 路由；
 - 持久化 Job Store；
@@ -179,7 +180,23 @@ internal/connectors
 docs/memory-connector.md
 ```
 
-### 9. 指纹 Artifact Builder
+### 9. pgvector Connector
+
+最小 pgvector connector 位于：
+
+```text
+internal/connectors
+```
+
+它会校验 pgvector 配置、检查 `vector` extension、统计表记录数，并通过 PostgreSQL + pgx 执行 cosine / L2 向量检索，返回标准化 `SearchResponse`。
+
+详细说明见：
+
+```text
+docs/pgvector-connector.md
+```
+
+### 10. 指纹 Artifact Builder
 
 Go 指纹 artifact builder 位于：
 
@@ -199,7 +216,7 @@ search results -> source-fingerprint.json / target-fingerprint.json
 docs/fingerprint-artifact-builder.md
 ```
 
-### 10. 本地 Verification Runner
+### 11. 本地 Verification Runner
 
 Go 本地任务 runner 位于：
 
@@ -219,7 +236,7 @@ internal/jobs
 docs/local-verification-runner.md
 ```
 
-### 11. 本地 Offline Pipeline
+### 12. 本地 Offline Pipeline
 
 Go 本地 offline pipeline 位于：
 
@@ -235,7 +252,7 @@ internal/pipeline
 docs/local-offline-pipeline.md
 ```
 
-### 12. Offline Verify Fixture CLI
+### 13. Offline Verify Fixture CLI
 
 `vdbg offline-verify` 命令可以从 JSON fixture 跑通无数据库本地验证链路，并写出 source/target fingerprint artifact 与 result artifact。
 
@@ -245,7 +262,7 @@ docs/local-offline-pipeline.md
 docs/offline-verify-fixture.md
 ```
 
-### 13. 本地 Migration Stack
+### 14. 本地 Migration Stack
 
 本地 migration stack 定义了 Milvus standalone 与 PostgreSQL pgvector 服务，用于后续基础迁移对比 MVP。
 
@@ -267,7 +284,7 @@ make migration-stack-up
 docs/local-migration-stack.md
 ```
 
-### 14. 合成向量 Fixture
+### 15. 合成向量 Fixture
 
 `vdbg generate-synthetic-fixture` 命令可以生成固定 seed 的 records 与 query vectors，供后续 Milvus 写入、pgvector 写入和迁移对比使用。
 
@@ -501,7 +518,7 @@ feat(engine): add boundary candidate metrics
 - [x] 本地 offline verification pipeline；
 - [x] offline-verify fixture CLI；
 - [ ] Milvus connector；
-- [ ] pgvector connector；
+- [x] pgvector connector；
 - [x] 合成数据生成；
 - [ ] 检索结果采集；
 - [ ] 指纹距离报告；

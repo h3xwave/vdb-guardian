@@ -25,6 +25,7 @@ Implemented in this scaffold:
 - Typed YAML job configuration loader and validator.
 - Vector database connector interface.
 - Memory connector for deterministic local verification.
+- Minimal pgvector connector for migration MVP target-side search.
 - Local offline verification pipeline.
 - Offline verify fixture CLI command.
 - Local Milvus and pgvector migration Docker Compose stack.
@@ -43,7 +44,7 @@ Implemented in this scaffold:
 Planned but not yet implemented:
 
 - Real Milvus connector.
-- Real pgvector connector.
+- pgvector fixture seeding and integration tests.
 - Real migration and verification CLI command.
 - API routes.
 - Persistent job storage.
@@ -111,6 +112,12 @@ See `docs/engine-protocol.md` for the JSON input/output contract and `docs/finge
 The memory connector lives in `internal/connectors`. It returns deterministic precomputed ranked hits through the same `Connector` interface that future Milvus and pgvector connectors will implement.
 
 See `docs/memory-connector.md` for local verification usage and limitations.
+
+## pgvector connector
+
+The minimal pgvector connector lives in `internal/connectors`. It validates pgvector configuration, checks that the `vector` extension is installed, counts rows, and executes cosine/L2 vector search through PostgreSQL with `pgx`.
+
+See `docs/pgvector-connector.md` for current scope, query behavior, safety rules, and MVP limitations.
 
 ## Fingerprint artifact builder
 
