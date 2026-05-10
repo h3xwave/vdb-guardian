@@ -53,6 +53,7 @@ Python 检索行为指纹算法引擎
 - 本地 verification job runner：`internal/jobs`；
 - 类型化 YAML 任务配置加载与校验：`internal/config`；
 - 向量数据库连接器接口：`internal/connectors`；
+- 指纹 artifact builder：`internal/fingerprints`；
 - 指纹引擎接口：`internal/engine`；
 - Python 子进程引擎 Runner；
 - Go / Python JSON 引擎协议；
@@ -147,7 +148,27 @@ cat /tmp/vdb-engine-output.json
 docs/fingerprint-artifact-format.md
 ```
 
-### 7. 本地 Verification Runner
+### 7. 指纹 Artifact Builder
+
+Go 指纹 artifact builder 位于：
+
+```text
+internal/fingerprints
+```
+
+它接收标准化 search results，并生成 Python 引擎可直接消费的 fingerprint artifact：
+
+```text
+search results -> source-fingerprint.json / target-fingerprint.json
+```
+
+详细说明见：
+
+```text
+docs/fingerprint-artifact-builder.md
+```
+
+### 8. 本地 Verification Runner
 
 Go 本地任务 runner 位于：
 
@@ -246,6 +267,7 @@ vdb-guardian/
 │   ├── config/
 │   ├── connectors/
 │   ├── engine/
+│   ├── fingerprints/
 │   ├── jobs/
 │   └── version/
 ├── python/
@@ -367,6 +389,7 @@ feat(engine): add boundary candidate metrics
 ### Phase 3：Milvus 到 pgvector 实验链路
 
 - [x] Artifact-backed 指纹对比；
+- [x] Search results 到 fingerprint artifact 构建；
 - [ ] Milvus connector；
 - [ ] pgvector connector；
 - [ ] 合成数据生成；

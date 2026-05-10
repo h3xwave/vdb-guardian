@@ -54,6 +54,17 @@ Local job runner changes must update:
 
 Run `go test ./internal/jobs`, `make test`, and `git diff --check` before committing.
 
+## Fingerprint artifact builder development
+
+Fingerprint builder changes must update:
+
+- `internal/fingerprints` builder tests.
+- `docs/fingerprint-artifact-builder.md`.
+- `docs/fingerprint-artifact-format.md` when the artifact contract changes.
+- README files when the local workflow changes.
+
+Run `go test ./internal/fingerprints`, `make test`, and `git diff --check` before committing.
+
 ## Progress reporting
 
 Report progress at phase boundaries:

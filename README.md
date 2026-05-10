@@ -24,6 +24,7 @@ Implemented in this scaffold:
 - Local verification job runner.
 - Typed YAML job configuration loader and validator.
 - Vector database connector interface.
+- Fingerprint artifact builder.
 - Fingerprint engine interface.
 - Python subprocess engine runner.
 - In-memory artifact store.
@@ -96,6 +97,12 @@ uv run python -m vdb_fingerprint_engine.cli compare --input /tmp/vdb-engine-inpu
 ```
 
 See `docs/engine-protocol.md` for the JSON input/output contract and `docs/fingerprint-artifact-format.md` for the artifact schema. The current compare command reads source and target fingerprint artifacts and returns artifact-backed consistency metrics.
+
+## Fingerprint artifact builder
+
+The Go fingerprint artifact builder lives in `internal/fingerprints`. It converts normalized search results into Python-compatible retrieval behavior fingerprint artifacts by deriving `stable_neighbors`, `boundary_candidates`, and `top_k_ids` from ranked hits.
+
+See `docs/fingerprint-artifact-builder.md` for the builder workflow and validation rules.
 
 ## Local verification runner
 
