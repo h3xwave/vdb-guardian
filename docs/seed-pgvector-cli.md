@@ -79,6 +79,45 @@ items-name
 
 Vector values are encoded as pgvector literals and rejected when they are empty, `NaN`, or infinite.
 
+## Local migration stack smoke check
+
+After explicit approval to start Docker services, the command can be verified against the local pgvector service:
+
+```bash
+make migration-stack-config
+docker compose -f deployments/docker-compose.migration.yml up -d postgres-pgvector
+scripts/check-migration-stack.sh postgres
+```
+
+Then run the seeder with a local-only connection URL:
+
+```bash
+go run ./cmd/vdbg seed-pgvector \
+  --fixture testdata/migration/synthetic-small.json \
+  --connection-url '[REDACTED]' \
+  --table items \
+  --id-column id \
+  --vector-column embedding
+```
+
+Verify the row count and vector dimensions from inside the PostgreSQL container:
+
+```bash
+docker compose -f deployments/docker-compose.migration.yml exec -T postgres-pgvector psql \
+  -U vdb_guardian \
+  -d vdb_guardian \
+  -c "SELECT COUNT(*) AS seeded_records FROM items; SELECT id, vector_dims(embedding) AS dims FROM items ORDER BY id LIMIT 3;"
+```
+
+Expected result for `testdata/migration/synthetic-small.json`:
+
+```text
+seeded_records = 100
+first sample dimensions = 8
+```
+
+If the full Milvus stack cannot pull MinIO or Milvus images because of registry/mirror issues, the pgvector smoke check can still run with only `postgres-pgvector`. That verifies the target-side write loop without claiming source-side Milvus readiness.
+
 ## Current limitations
 
 Implemented:
@@ -88,11 +127,12 @@ Implemented:
 - pgvector extension/table creation.
 - Record upsert.
 - CLI option parsing and unit tests.
+- Manual local Docker pgvector smoke verification.
 
 Not yet implemented:
 
 - Automatic Docker stack startup.
-- Integration test against the local migration stack.
+- Automated integration test against the local migration stack.
 - Milvus real SDK seeding command.
 - End-to-end migrate-and-verify command.
 - Index creation such as HNSW or IVFFlat.

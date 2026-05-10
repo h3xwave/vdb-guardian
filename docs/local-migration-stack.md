@@ -106,6 +106,30 @@ make migration-stack-down
 
 This removes containers and the Compose network. Named volumes are preserved unless removed manually.
 
+## pgvector seed smoke check
+
+After the PostgreSQL pgvector service is healthy, the target-side seed loop can be verified with:
+
+```bash
+go run ./cmd/vdbg seed-pgvector \
+  --fixture testdata/migration/synthetic-small.json \
+  --connection-url '[REDACTED]' \
+  --table items \
+  --id-column id \
+  --vector-column embedding
+```
+
+Then verify the seeded row count and vector dimensions:
+
+```bash
+docker compose -f deployments/docker-compose.migration.yml exec -T postgres-pgvector psql \
+  -U vdb_guardian \
+  -d vdb_guardian \
+  -c "SELECT COUNT(*) AS seeded_records FROM items; SELECT id, vector_dims(embedding) AS dims FROM items ORDER BY id LIMIT 3;"
+```
+
+For the committed small fixture, the expected row count is `100` and the vector dimension is `8`.
+
 ## Current limitations
 
-This stack only prepares local services. It does not yet seed vectors, run migrations, or execute Milvus/pgvector searches. Those capabilities will be added in the migration MVP steps that follow.
+This stack now supports validating the pgvector target-side seed loop. It does not yet seed Milvus, run Milvus-to-pgvector migrations, or execute the full migrate-and-verify workflow. Those capabilities will be added in the migration MVP steps that follow.
