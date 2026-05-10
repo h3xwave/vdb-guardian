@@ -1,0 +1,19 @@
+# Local development configuration for vdb-guardian.
+# This file contains no real credentials and is intended as a safe starting point.
+job:
+  name: local-scaffold
+
+runtime:
+  artifact_store:
+    type: local
+    path: ./artifacts
+
+fingerprint:
+  boundary:
+    rank_before_k: 2
+    delta: 0.03
+  weights:
+    stable_diff: 0.25
+    boundary_flip: 0.40
+    curve_diff: 0.20
+    filter_diff: 0.15

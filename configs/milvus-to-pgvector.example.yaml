@@ -1,0 +1,36 @@
+# Example verification job for a future Milvus to pgvector run.
+# Do not place real production credentials in this file.
+job:
+  name: milvus-to-pgvector-demo
+
+source:
+  type: milvus
+  address: localhost:19530
+  collection: patent_demo
+
+target:
+  type: pgvector
+  dsn: postgresql://postgres:[REDACTED]@localhost:5433/postgres
+  table: items
+
+query:
+  top_k: 10
+  expand_k: 20
+  sample_size: 100
+  filters:
+    enabled: true
+
+fingerprint:
+  boundary:
+    rank_before_k: 2
+    delta: 0.03
+  weights:
+    stable_diff: 0.25
+    boundary_flip: 0.40
+    curve_diff: 0.20
+    filter_diff: 0.15
+
+report:
+  formats:
+    - json
+    - markdown
