@@ -31,13 +31,13 @@ func NewMilvusVectorMigrationSource(config connectors.MilvusConfig, reader milvu
 		return MilvusVectorMigrationSource{}, err
 	}
 	if config.DefaultCollection == "" {
-		config.DefaultCollection = "items"
+		config.DefaultCollection = DefaultSeedCollection
 	}
 	if config.IDField == "" {
-		config.IDField = "id"
+		config.IDField = DefaultSeedIDField
 	}
 	if config.VectorField == "" {
-		config.VectorField = "embedding"
+		config.VectorField = DefaultSeedVectorField
 	}
 	if reader == nil {
 		reader = newMilvusSDKMigrationReader(config.Address)
@@ -79,13 +79,13 @@ func NewPGVectorMigrationTarget(config connectors.PGVectorConfig, writer pgvecto
 		return PGVectorMigrationTarget{}, err
 	}
 	if config.DefaultTable == "" {
-		config.DefaultTable = "items"
+		config.DefaultTable = DefaultSeedCollection
 	}
 	if config.IDColumn == "" {
-		config.IDColumn = "id"
+		config.IDColumn = DefaultSeedIDField
 	}
 	if config.VectorColumn == "" {
-		config.VectorColumn = "embedding"
+		config.VectorColumn = DefaultSeedVectorField
 	}
 	if writer == nil {
 		writer = newPGXPGVectorMigrationWriter(config.ConnectionURL)

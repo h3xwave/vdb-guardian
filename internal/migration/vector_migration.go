@@ -128,10 +128,10 @@ func (r VectorMigrationRunner) Migrate(ctx context.Context) (VectorMigrationResu
 
 func applyVectorMigrationDefaults(config VectorMigrationConfig) VectorMigrationConfig {
 	if config.SourceCollection == "" {
-		config.SourceCollection = "items"
+		config.SourceCollection = DefaultSeedCollection
 	}
 	if config.TargetTable == "" {
-		config.TargetTable = "items"
+		config.TargetTable = DefaultSeedCollection
 	}
 	if config.BatchSize == 0 {
 		config.BatchSize = 100

@@ -126,13 +126,13 @@ func (s PGVectorSeeder) Seed(ctx context.Context, dataset fixtures.SyntheticData
 
 func applyPGVectorSeederDefaults(config PGVectorSeederConfig) PGVectorSeederConfig {
 	if config.Table == "" {
-		config.Table = "items"
+		config.Table = DefaultSeedCollection
 	}
 	if config.IDColumn == "" {
-		config.IDColumn = "id"
+		config.IDColumn = DefaultSeedIDField
 	}
 	if config.VectorColumn == "" {
-		config.VectorColumn = "embedding"
+		config.VectorColumn = DefaultSeedVectorField
 	}
 	return config
 }

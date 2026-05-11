@@ -154,13 +154,13 @@ func (s MilvusSeeder) Seed(ctx context.Context, dataset fixtures.SyntheticDatase
 
 func applyMilvusSeederDefaults(config MilvusSeederConfig) MilvusSeederConfig {
 	if config.Collection == "" {
-		config.Collection = "items"
+		config.Collection = DefaultSeedCollection
 	}
 	if config.IDField == "" {
-		config.IDField = "id"
+		config.IDField = DefaultSeedIDField
 	}
 	if config.VectorField == "" {
-		config.VectorField = "embedding"
+		config.VectorField = DefaultSeedVectorField
 	}
 	if config.Metric == "" {
 		config.Metric = fixtures.MetricCosine
