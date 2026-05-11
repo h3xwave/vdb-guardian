@@ -2,7 +2,7 @@
 
 The internal vector migration runner provides the first database-neutral boundary for moving records from a Milvus source reader into a pgvector target writer.
 
-It is intentionally not a CLI yet. The runner is the tested core that the next `vdbg migrate` command will wrap.
+It is now wrapped by the public `vdbg migrate` CLI for the first real Milvus-to-pgvector transfer path.
 
 ## Scope
 
@@ -23,7 +23,6 @@ Implemented:
 
 Not implemented yet:
 
-- Public `vdbg migrate` CLI.
 - One-shot `migrate-and-verify` orchestration.
 - Metadata columns.
 - Milvus partitions.
@@ -116,13 +115,7 @@ git diff --check
 
 ## Next step
 
-Expose the real reader/writer flow via:
-
-```text
-vdbg migrate
-```
-
-After that, compose migration, artifact generation, and comparison into:
+Compose migration, artifact generation, and comparison into:
 
 ```text
 vdbg migrate-and-verify

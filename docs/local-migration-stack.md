@@ -234,6 +234,26 @@ python -m json.tool /tmp/vdb-guardian-source-fingerprint.json >/dev/null
 
 For the committed small fixture, the expected artifact contains `10` query fingerprints.
 
+## Real Milvus-to-pgvector migration check
+
+After the Milvus source collection has been seeded and the PostgreSQL pgvector service is healthy, run the real migration path:
+
+```bash
+go run ./cmd/vdbg migrate \
+  --milvus-address localhost:19530 \
+  --source-collection items \
+  --milvus-id-field id \
+  --milvus-vector-field embedding \
+  --pgvector-connection-url '[REDACTED]' \
+  --target-table items \
+  --pgvector-id-column id \
+  --pgvector-vector-column embedding \
+  --dimension 8 \
+  --batch-size 100
+```
+
+For the committed small fixture, the expected summary is `records_read: 100` and `records_written: 100`.
+
 ## Source/target artifact comparison check
 
 After both source and target fingerprint artifacts exist, compare them through the Python engine:
@@ -264,4 +284,4 @@ scripts/check-migration-stack.sh milvus-port
 
 ## Current limitations
 
-This stack now supports validating the pgvector target-side seed, search, and fingerprint artifact loops, source-side Milvus fixture seeding, search, and fingerprint artifact loops, plus source/target artifact comparison. It also has the first tested database-neutral Milvus-to-pgvector migration runner boundary, the tested Milvus read / pgvector write adapter boundary, and the real SDK/SQL reader/writer implementations in place. It does not yet run the real source-to-target migration or execute the full migrate-and-verify workflow. Those capabilities will be added in the migration MVP steps that follow.
+This stack now supports validating the pgvector target-side seed, search, and fingerprint artifact loops, source-side Milvus fixture seeding, search, and fingerprint artifact loops, real Milvus-to-pgvector migration, plus source/target artifact comparison. It does not yet execute the full migrate-and-verify workflow. That capability will be added in the migration MVP steps that follow.

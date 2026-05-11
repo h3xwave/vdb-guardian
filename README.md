@@ -47,6 +47,7 @@ Implemented in this scaffold:
 - Internal minimal Milvus-to-pgvector migration runner boundary.
 - Tested migration source/target adapter boundary for Milvus reads and pgvector writes.
 - Real Milvus SDK migration reader and pgx-backed pgvector migration writer.
+- `vdbg migrate` real Milvus-to-pgvector migration CLI.
 - Synthetic vector dataset generator.
 - Fingerprint artifact builder.
 - Fingerprint engine interface.
@@ -63,7 +64,6 @@ Planned but not yet implemented:
 
 - Milvus seed CLI integration tests against the local migration stack.
 - pgvector seed CLI integration tests against the local migration stack.
-- Real migration CLI command backed by the internal runner.
 - Real migration and verification CLI command.
 - API routes.
 - Persistent job storage.
