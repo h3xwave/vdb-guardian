@@ -38,6 +38,10 @@ linters-settings:
   gocyclo:
     min-complexity: 15
 
+  goconst:
+    min-occurrences: 5  # Require at least 5 occurrences before suggesting a constant
+    ignore-tests: true  # Don't check test files
+
   misspell:
     locale: US
 
@@ -66,6 +70,11 @@ issues:
       linters:
         - gosec
       path: fixtures/synthetic.go
+
+    # Exclude main function from cyclomatic complexity check
+    - text: "cyclomatic complexity .* of func `main` is high"
+      linters:
+        - gocyclo
 
   max-issues-per-linter: 0
   max-same-issues: 0

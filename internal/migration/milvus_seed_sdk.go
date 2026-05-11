@@ -3,7 +3,6 @@ package migration
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/h3xwave/vdb-guardian/internal/fixtures"
 	milvusclient "github.com/milvus-io/milvus-sdk-go/v2/client"
@@ -107,13 +106,7 @@ func (db *milvusSDKSeedDB) CreateCollection(ctx context.Context, req milvusCreat
 			return err
 		}
 	}
-	createReq := milvusSDKSeedCreateCollectionRequest{
-		Collection:  req.Collection,
-		IDField:     req.IDField,
-		VectorField: req.VectorField,
-		Dimension:   req.Dimension,
-		Metric:      req.Metric,
-	}
+	createReq := milvusSDKSeedCreateCollectionRequest(req)
 	if err := db.client.CreateCollection(ctx, createReq); err != nil {
 		return err
 	}
@@ -244,8 +237,4 @@ func vectorDimension(vectors [][]float32) int {
 		return 0
 	}
 	return len(vectors[0])
-}
-
-func formatMilvusSeedSummary(result MilvusSeedResult) string {
-	return fmt.Sprintf("collection=%s dimension=%d records_seeded=%d", result.Collection, result.Dimension, result.RecordsSeeded)
 }

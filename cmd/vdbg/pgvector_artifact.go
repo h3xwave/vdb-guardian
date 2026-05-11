@@ -61,8 +61,8 @@ func runPGVectorArtifactWithFactory(ctx context.Context, args []string, factory 
 		return err
 	}
 	defer connector.Close()
-	if err := connector.Connect(ctx); err != nil {
-		return err
+	if connectErr := connector.Connect(ctx); connectErr != nil {
+		return connectErr
 	}
 	results := make([]fingerprints.SearchResult, 0, len(dataset.Queries))
 	for _, query := range dataset.Queries {

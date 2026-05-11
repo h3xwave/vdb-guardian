@@ -3,7 +3,7 @@ package jobs
 import "testing"
 
 func TestStateIsTerminalReturnsTrueForCompletedStates(t *testing.T) {
-	terminalStates := []State{StateSucceeded, StateFailed, StateCancelled}
+	terminalStates := []State{StateSucceeded, StateFailed, StateCanceled}
 
 	for _, state := range terminalStates {
 		if !state.IsTerminal() {

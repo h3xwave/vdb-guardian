@@ -56,10 +56,10 @@ const (
 	//
 	// StateFailed 标记该作业因为遇到了不可恢复的致命错误而被迫终止。
 	StateFailed State = "FAILED"
-	// StateCancelled marks a job that was intentionally stopped by an operator or caller.
+	// StateCanceled marks a job that was intentionally stopped by an operator or caller.
 	//
-	// StateCancelled 标记该作业被操作人员或外部调用方人为主动终止。
-	StateCancelled State = "CANCELLED"
+	// StateCanceled 标记该作业被操作人员或外部调用方人为主动终止。
+	StateCanceled State = "CANCELED"
 )
 
 // String returns the wire-format name of the state. It is used by logs, reports,
@@ -82,7 +82,7 @@ func (s State) String() string {
 // 否则系统绝对不允许对处于终态的作业执行自动重试或继续推进。
 func (s State) IsTerminal() bool {
 	switch s {
-	case StateSucceeded, StateFailed, StateCancelled:
+	case StateSucceeded, StateFailed, StateCanceled:
 		return true
 	default:
 		return false
@@ -110,7 +110,7 @@ func ParseState(value string) (State, error) {
 		StateGeneratingReport,
 		StateSucceeded,
 		StateFailed,
-		StateCancelled:
+		StateCanceled:
 		return state, nil
 	default:
 		return "", fmt.Errorf("unknown job state %q", value)
