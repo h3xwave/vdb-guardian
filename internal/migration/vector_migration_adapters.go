@@ -39,6 +39,9 @@ func NewMilvusVectorMigrationSource(config connectors.MilvusConfig, reader milvu
 	if config.VectorField == "" {
 		config.VectorField = "embedding"
 	}
+	if reader == nil {
+		reader = newMilvusSDKMigrationReader(config.Address)
+	}
 	return MilvusVectorMigrationSource{config: config, reader: reader}, nil
 }
 
@@ -84,6 +87,9 @@ func NewPGVectorMigrationTarget(config connectors.PGVectorConfig, writer pgvecto
 	if config.VectorColumn == "" {
 		config.VectorColumn = "embedding"
 	}
+	if writer == nil {
+		writer = newPGXPGVectorMigrationWriter(config.ConnectionURL)
+	}
 	return PGVectorMigrationTarget{config: config, writer: writer}, nil
 }
 
@@ -123,9 +129,6 @@ func validateMilvusMigrationSourceConfig(config connectors.MilvusConfig, reader 
 			return err
 		}
 	}
-	if reader == nil {
-		return fmt.Errorf("milvus migration record reader is required")
-	}
 	return nil
 }
 
@@ -147,9 +150,6 @@ func validatePGVectorMigrationTargetConfig(config connectors.PGVectorConfig, wri
 		if err := validateMigrationAdapterIdentifier("pgvector vector column", config.VectorColumn); err != nil {
 			return err
 		}
-	}
-	if writer == nil {
-		return fmt.Errorf("pgvector migration record writer is required")
 	}
 	return nil
 }

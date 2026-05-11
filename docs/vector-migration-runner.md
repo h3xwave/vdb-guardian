@@ -14,6 +14,8 @@ Implemented:
 - Target writer boundary accepting normalized records.
 - Tested Milvus migration source adapter boundary.
 - Tested pgvector migration target adapter boundary.
+- Real Milvus SDK query-iterator migration reader.
+- Real pgx-backed pgvector migration writer.
 - Defensive vector copying before writes.
 - Context cancellation checks.
 - Wrapped read/write errors for diagnostics.
@@ -21,8 +23,6 @@ Implemented:
 
 Not implemented yet:
 
-- Real Milvus scan/query adapter.
-- Real pgvector migration writer adapter.
 - Public `vdbg migrate` CLI.
 - One-shot `migrate-and-verify` orchestration.
 - Metadata columns.
@@ -74,7 +74,7 @@ type vectorMigrationTarget interface {
 }
 ```
 
-These interfaces are package-private on purpose. The next increment can add real SDK-backed adapters in the same package without exposing unstable adapter details to callers.
+These interfaces are package-private on purpose. Real SDK/SQL-backed adapters now live in the same package without exposing unstable adapter details to callers.
 
 ## Defaults
 
@@ -116,13 +116,7 @@ git diff --check
 
 ## Next step
 
-Add real adapters behind this runner:
-
-```text
-Milvus collection reader -> VectorMigrationRecord[] -> pgvector writer
-```
-
-Then expose the flow via:
+Expose the real reader/writer flow via:
 
 ```text
 vdbg migrate
