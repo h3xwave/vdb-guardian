@@ -8,6 +8,8 @@ It is now wrapped by the public `vdbg migrate` CLI for the first real Milvus-to-
 
 Implemented:
 
+- `vdbg migrate` migration-only CLI.
+- `vdbg migrate-and-verify` one-shot migration and verification CLI.
 - Fixed source collection and target table names.
 - Fixed vector dimension validation.
 - Source reader boundary returning normalized records.
@@ -23,7 +25,6 @@ Implemented:
 
 Not implemented yet:
 
-- One-shot `migrate-and-verify` orchestration.
 - Metadata columns.
 - Milvus partitions.
 - Incremental checkpoints.
@@ -115,8 +116,4 @@ git diff --check
 
 ## Next step
 
-Compose migration, artifact generation, and comparison into:
-
-```text
-vdbg migrate-and-verify
-```
+Add production-oriented migration semantics such as metadata columns, Milvus partitions, incremental checkpoints, and target cleanup policies.

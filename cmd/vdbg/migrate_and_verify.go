@@ -1,0 +1,264 @@
+package main
+
+import (
+	"context"
+	"errors"
+	"flag"
+	"fmt"
+	"path/filepath"
+
+	"github.com/h3xwave/vdb-guardian/internal/connectors"
+	"github.com/h3xwave/vdb-guardian/internal/engine"
+	"github.com/h3xwave/vdb-guardian/internal/jobs"
+	"github.com/h3xwave/vdb-guardian/internal/migration"
+)
+
+type migrateAndVerifyOptions struct {
+	FixturePath string
+	Migrate     migrateOptions
+	ArtifactDir string
+	JobID       string
+	TopK        int
+	ExpandK     int
+	StableK     int
+	BoundaryK   int
+	Metric      string
+}
+
+type migrateAndVerifyResult struct {
+	Migration             migration.VectorMigrationResult
+	SourceFingerprintPath string
+	TargetFingerprintPath string
+	Verification          jobs.VerificationResult
+}
+
+type migrateAndVerifySteps interface {
+	Migrate(ctx context.Context, options migrateOptions) (migration.VectorMigrationResult, error)
+	BuildSourceArtifact(ctx context.Context, options migrateAndVerifyOptions, outputPath string) error
+	BuildTargetArtifact(ctx context.Context, options migrateAndVerifyOptions, outputPath string) error
+	Compare(ctx context.Context, options compareArtifactsOptions, compareEngine engine.Engine) (jobs.VerificationResult, error)
+}
+
+type realMigrateAndVerifySteps struct{}
+
+// runMigrateAndVerifyCommand migrates records, builds source/target fingerprint artifacts, and compares them.
+//
+// The command composes the existing real Milvus reader, pgvector writer, artifact builders, and Python comparison
+// engine. It assumes databases are already running and never starts Docker or provisions services.
+//
+// runMigrateAndVerifyCommand 负责执行真实迁移、构建源/目标指纹产物，并调用 Python 引擎完成一致性比对。
+//
+// 该命令只编排已有能力，假定数据库已经启动且可访问；它不会启动 Docker，也不会自动创建服务。
+func runMigrateAndVerifyCommand(ctx context.Context, args []string) error {
+	result, err := runMigrateAndVerifyWithSteps(ctx, args, realMigrateAndVerifySteps{})
+	if err != nil {
+		return err
+	}
+	fmt.Printf("migrate-and-verify completed\n")
+	fmt.Printf("source_collection: %s\n", result.Migration.SourceCollection)
+	fmt.Printf("target_table: %s\n", result.Migration.TargetTable)
+	fmt.Printf("dimension: %d\n", result.Migration.Dimension)
+	fmt.Printf("records_read: %d\n", result.Migration.RecordsRead)
+	fmt.Printf("records_written: %d\n", result.Migration.RecordsWritten)
+	fmt.Printf("consistency_score: %.6f\n", result.Verification.Output.ConsistencyScore)
+	fmt.Printf("fingerprint_distance: %.6f\n", result.Verification.Output.Metrics.FingerprintDistance)
+	fmt.Printf("matched_queries: %d\n", result.Verification.Output.Metrics.MatchedQueryCount)
+	fmt.Printf("source_fingerprint: %s\n", result.SourceFingerprintPath)
+	fmt.Printf("target_fingerprint: %s\n", result.TargetFingerprintPath)
+	fmt.Printf("result: %s\n", result.Verification.ResultPath)
+	return nil
+}
+
+func runMigrateAndVerifyWithSteps(ctx context.Context, args []string, steps migrateAndVerifySteps) (migrateAndVerifyResult, error) {
+	options, err := parseMigrateAndVerifyOptions(args)
+	if err != nil {
+		return migrateAndVerifyResult{}, err
+	}
+	migrationResult, err := steps.Migrate(ctx, options.Migrate)
+	if err != nil {
+		return migrateAndVerifyResult{}, err
+	}
+	sourcePath := filepath.Join(options.ArtifactDir, options.JobID+"-source-fingerprint.json")
+	targetPath := filepath.Join(options.ArtifactDir, options.JobID+"-target-fingerprint.json")
+	if err := steps.BuildSourceArtifact(ctx, options, sourcePath); err != nil {
+		return migrateAndVerifyResult{}, err
+	}
+	if err := steps.BuildTargetArtifact(ctx, options, targetPath); err != nil {
+		return migrateAndVerifyResult{}, err
+	}
+	verification, err := steps.Compare(ctx, compareArtifactsOptions{
+		SourceFingerprintPath: sourcePath,
+		TargetFingerprintPath: targetPath,
+		ArtifactDir:           options.ArtifactDir,
+		JobID:                 options.JobID,
+	}, nil)
+	if err != nil {
+		return migrateAndVerifyResult{}, err
+	}
+	return migrateAndVerifyResult{
+		Migration:             migrationResult,
+		SourceFingerprintPath: sourcePath,
+		TargetFingerprintPath: targetPath,
+		Verification:          verification,
+	}, nil
+}
+
+func parseMigrateAndVerifyOptions(args []string) (migrateAndVerifyOptions, error) {
+	flagSet := flag.NewFlagSet("migrate-and-verify", flag.ContinueOnError)
+	flagSet.SetOutput(discardFlagOutput{})
+
+	var fixturePath string
+	var milvusAddress string
+	var sourceCollection string
+	var milvusIDField string
+	var milvusVectorField string
+	var pgvectorConnectionURL string
+	var targetTable string
+	var pgvectorIDColumn string
+	var pgvectorVectorColumn string
+	var artifactDir string
+	var jobID string
+	var dimension int
+	var batchSize int
+	var topK int
+	var expandK int
+	var stableK int
+	var boundaryK int
+	var metric string
+	flagSet.StringVar(&fixturePath, "fixture", "", "path to a synthetic fixture JSON file containing verification queries")
+	flagSet.StringVar(&milvusAddress, "milvus-address", "", "Milvus gRPC address to read source records from")
+	flagSet.StringVar(&sourceCollection, "source-collection", "items", "Milvus source collection")
+	flagSet.StringVar(&milvusIDField, "milvus-id-field", "id", "Milvus text primary key field name")
+	flagSet.StringVar(&milvusVectorField, "milvus-vector-field", "embedding", "Milvus float vector field name")
+	flagSet.StringVar(&pgvectorConnectionURL, "pgvector-connection-url", "", "PostgreSQL connection URL for pgvector target")
+	flagSet.StringVar(&targetTable, "target-table", "items", "pgvector target table")
+	flagSet.StringVar(&pgvectorIDColumn, "pgvector-id-column", "id", "pgvector ID column")
+	flagSet.StringVar(&pgvectorVectorColumn, "pgvector-vector-column", "embedding", "pgvector vector column")
+	flagSet.StringVar(&artifactDir, "artifact-dir", "", "directory to write source, target, and comparison artifacts")
+	flagSet.StringVar(&jobID, "job-id", "migrate-and-verify", "job id used for artifact filenames")
+	flagSet.IntVar(&dimension, "dimension", 0, "vector dimension to validate during migration")
+	flagSet.IntVar(&batchSize, "batch-size", 100, "migration batch size")
+	flagSet.IntVar(&topK, "top-k", 3, "business-visible topK result count")
+	flagSet.IntVar(&expandK, "expand-k", 5, "expanded result count for boundary artifact building")
+	flagSet.IntVar(&stableK, "stable-k", 2, "leading hit count for stable_neighbors")
+	flagSet.IntVar(&boundaryK, "boundary-k", 1, "rank-window width around the topK cutoff")
+	flagSet.StringVar(&metric, "metric", connectors.MilvusMetricCosine, "metric for both Milvus and pgvector artifact searches: cosine or l2")
+	if err := flagSet.Parse(args); err != nil {
+		return migrateAndVerifyOptions{}, err
+	}
+	if fixturePath == "" {
+		return migrateAndVerifyOptions{}, errors.New("fixture path is required")
+	}
+	if milvusAddress == "" {
+		return migrateAndVerifyOptions{}, errors.New("milvus-address is required")
+	}
+	if pgvectorConnectionURL == "" {
+		return migrateAndVerifyOptions{}, errors.New("pgvector-connection-url is required")
+	}
+	if artifactDir == "" {
+		return migrateAndVerifyOptions{}, errors.New("artifact-dir is required")
+	}
+	if jobID == "" {
+		return migrateAndVerifyOptions{}, errors.New("job-id is required")
+	}
+	if dimension <= 0 {
+		return migrateAndVerifyOptions{}, errors.New("dimension must be positive")
+	}
+	if batchSize <= 0 {
+		return migrateAndVerifyOptions{}, errors.New("batch-size must be positive")
+	}
+	if topK <= 0 {
+		return migrateAndVerifyOptions{}, errors.New("top-k must be positive")
+	}
+	if stableK <= 0 || stableK > topK {
+		return migrateAndVerifyOptions{}, errors.New("stable-k must be positive and less than or equal to top-k")
+	}
+	if boundaryK <= 0 {
+		return migrateAndVerifyOptions{}, errors.New("boundary-k must be positive")
+	}
+	if expandK < topK+boundaryK {
+		return migrateAndVerifyOptions{}, errors.New("expand-k must be greater than or equal to top-k plus boundary-k")
+	}
+	if metric != connectors.MilvusMetricCosine && metric != connectors.MilvusMetricL2 {
+		return migrateAndVerifyOptions{}, fmt.Errorf("unsupported metric %q", metric)
+	}
+	return migrateAndVerifyOptions{
+		FixturePath: fixturePath,
+		Migrate: migrateOptions{
+			MilvusConfig: connectors.MilvusConfig{
+				Address:           milvusAddress,
+				DefaultCollection: sourceCollection,
+				IDField:           milvusIDField,
+				VectorField:       milvusVectorField,
+			},
+			PGVectorConfig: connectors.PGVectorConfig{
+				ConnectionURL: pgvectorConnectionURL,
+				DefaultTable:  targetTable,
+				IDColumn:      pgvectorIDColumn,
+				VectorColumn:  pgvectorVectorColumn,
+			},
+			MigrationConfig: migration.VectorMigrationConfig{
+				SourceCollection: sourceCollection,
+				TargetTable:      targetTable,
+				Dimension:        dimension,
+				BatchSize:        batchSize,
+			},
+		},
+		ArtifactDir: artifactDir,
+		JobID:       jobID,
+		TopK:        topK,
+		ExpandK:     expandK,
+		StableK:     stableK,
+		BoundaryK:   boundaryK,
+		Metric:      metric,
+	}, nil
+}
+
+func (realMigrateAndVerifySteps) Migrate(ctx context.Context, options migrateOptions) (migration.VectorMigrationResult, error) {
+	runner, err := newMigrateRunner(options.MilvusConfig, options.PGVectorConfig, options.MigrationConfig)
+	if err != nil {
+		return migration.VectorMigrationResult{}, err
+	}
+	return runner.Migrate(ctx)
+}
+
+func (realMigrateAndVerifySteps) BuildSourceArtifact(ctx context.Context, options migrateAndVerifyOptions, outputPath string) error {
+	return runMilvusArtifactWithFactory(ctx, []string{
+		"--fixture", options.FixturePath,
+		"--address", options.Migrate.MilvusConfig.Address,
+		"--output", outputPath,
+		"--collection", options.Migrate.MigrationConfig.SourceCollection,
+		"--id-field", options.Migrate.MilvusConfig.IDField,
+		"--vector-field", options.Migrate.MilvusConfig.VectorField,
+		"--top-k", fmt.Sprintf("%d", options.TopK),
+		"--expand-k", fmt.Sprintf("%d", options.ExpandK),
+		"--stable-k", fmt.Sprintf("%d", options.StableK),
+		"--boundary-k", fmt.Sprintf("%d", options.BoundaryK),
+		"--metric", options.Metric,
+	}, newMilvusSearchConnector)
+}
+
+func (realMigrateAndVerifySteps) BuildTargetArtifact(ctx context.Context, options migrateAndVerifyOptions, outputPath string) error {
+	return runPGVectorArtifactWithFactory(ctx, []string{
+		"--fixture", options.FixturePath,
+		"--connection-url", options.Migrate.PGVectorConfig.ConnectionURL,
+		"--output", outputPath,
+		"--table", options.Migrate.MigrationConfig.TargetTable,
+		"--top-k", fmt.Sprintf("%d", options.TopK),
+		"--expand-k", fmt.Sprintf("%d", options.ExpandK),
+		"--stable-k", fmt.Sprintf("%d", options.StableK),
+		"--boundary-k", fmt.Sprintf("%d", options.BoundaryK),
+		"--metric", options.Metric,
+	}, newPGVectorSearchConnector)
+}
+
+func (realMigrateAndVerifySteps) Compare(ctx context.Context, options compareArtifactsOptions, compareEngine engine.Engine) (jobs.VerificationResult, error) {
+	if compareEngine == nil {
+		pythonPath, pythonWorkDir, err := discoverPythonEngine()
+		if err != nil {
+			return jobs.VerificationResult{}, err
+		}
+		compareEngine = engine.NewPythonRunner(pythonPath, pythonWorkDir)
+	}
+	return runCompareArtifacts(ctx, options, compareEngine)
+}

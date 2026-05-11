@@ -91,6 +91,13 @@ func main() {
 		}
 		return
 	}
+	if len(os.Args) > 1 && os.Args[1] == "migrate-and-verify" {
+		if err := runMigrateAndVerifyCommand(context.Background(), os.Args[2:]); err != nil {
+			fmt.Fprintf(os.Stderr, "migrate-and-verify failed: %v\n", err)
+			os.Exit(1)
+		}
+		return
+	}
 
 	fmt.Printf("%s: enterprise vector database migration verifier\n", info.Name)
 }

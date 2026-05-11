@@ -254,9 +254,37 @@ go run ./cmd/vdbg migrate \
 
 For the committed small fixture, the expected summary is `records_read: 100` and `records_written: 100`.
 
+## One-shot migrate-and-verify check
+
+After the Milvus source collection has been seeded and the PostgreSQL pgvector service is healthy, run the full one-shot consistency loop:
+
+```bash
+go run ./cmd/vdbg migrate-and-verify \
+  --fixture testdata/migration/synthetic-small.json \
+  --milvus-address localhost:19530 \
+  --source-collection items \
+  --milvus-id-field id \
+  --milvus-vector-field embedding \
+  --pgvector-connection-url '[REDACTED]' \
+  --target-table items \
+  --pgvector-id-column id \
+  --pgvector-vector-column embedding \
+  --artifact-dir /tmp/vdb-guardian-run \
+  --job-id migrate-and-verify-smoke \
+  --dimension 8 \
+  --batch-size 100 \
+  --top-k 3 \
+  --expand-k 5 \
+  --stable-k 2 \
+  --boundary-k 1 \
+  --metric cosine
+```
+
+For the committed small fixture and compatible source/target search behavior, the command should print `records_read: 100`, `records_written: 100`, and `matched_queries: 10`.
+
 ## Source/target artifact comparison check
 
-After both source and target fingerprint artifacts exist, compare them through the Python engine:
+If source and target fingerprint artifacts already exist, compare them directly through the Python engine:
 
 ```bash
 go run ./cmd/vdbg compare-artifacts \
@@ -284,4 +312,4 @@ scripts/check-migration-stack.sh milvus-port
 
 ## Current limitations
 
-This stack now supports validating the pgvector target-side seed, search, and fingerprint artifact loops, source-side Milvus fixture seeding, search, and fingerprint artifact loops, real Milvus-to-pgvector migration, plus source/target artifact comparison. It does not yet execute the full migrate-and-verify workflow. That capability will be added in the migration MVP steps that follow.
+This stack now supports validating the pgvector target-side seed, search, and fingerprint artifact loops, source-side Milvus fixture seeding, search, and fingerprint artifact loops, real Milvus-to-pgvector migration, one-shot migrate-and-verify orchestration, plus direct source/target artifact comparison. Production checkpointing, metadata columns, Milvus partitions, and cleanup policies remain future work.
