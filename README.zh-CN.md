@@ -1,8 +1,8 @@
 # vdb-guardian
 
-[![CI](https://github.com/huxinweidev-cloud/vdb-guardian/workflows/CI/badge.svg)](https://github.com/huxinweidev-cloud/vdb-guardian/actions)
-[![codecov](https://codecov.io/gh/huxinweidev-cloud/vdb-guardian/branch/main/graph/badge.svg)](https://codecov.io/gh/huxinweidev-cloud/vdb-guardian)
-[![Go Report Card](https://goreportcard.com/badge/github.com/huxinweidev-cloud/vdb-guardian)](https://goreportcard.com/report/github.com/huxinweidev-cloud/vdb-guardian)
+[![CI](https://github.com/h3xwave/vdb-guardian/workflows/CI/badge.svg)](https://github.com/h3xwave/vdb-guardian/actions)
+[![codecov](https://codecov.io/gh/h3xwave/vdb-guardian/branch/main/graph/badge.svg)](https://codecov.io/gh/h3xwave/vdb-guardian)
+[![Go Report Card](https://goreportcard.com/badge/github.com/h3xwave/vdb-guardian)](https://goreportcard.com/report/github.com/h3xwave/vdb-guardian)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
 `vdb-guardian` 是一个面向企业级部署的异构向量数据库迁移一致性验证平台。
