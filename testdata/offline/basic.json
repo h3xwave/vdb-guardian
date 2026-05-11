@@ -1,0 +1,24 @@
+{
+  "job_id": "offline-basic",
+  "top_k": 3,
+  "expand_k": 4,
+  "stable_k": 2,
+  "boundary_k": 1,
+  "queries": [
+    {
+      "query_id": "q-1",
+      "source_hits": [
+        {"id": "a", "rank": 1, "score": 0.99},
+        {"id": "b", "rank": 2, "score": 0.95},
+        {"id": "c", "rank": 3, "score": 0.9},
+        {"id": "d", "rank": 4, "score": 0.85}
+      ],
+      "target_hits": [
+        {"id": "a", "rank": 1, "score": 0.99},
+        {"id": "b", "rank": 2, "score": 0.95},
+        {"id": "x", "rank": 3, "score": 0.89},
+        {"id": "d", "rank": 4, "score": 0.85}
+      ]
+    }
+  ]
+}
