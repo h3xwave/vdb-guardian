@@ -12,6 +12,8 @@ Implemented:
 - Fixed vector dimension validation.
 - Source reader boundary returning normalized records.
 - Target writer boundary accepting normalized records.
+- Tested Milvus migration source adapter boundary.
+- Tested pgvector migration target adapter boundary.
 - Defensive vector copying before writes.
 - Context cancellation checks.
 - Wrapped read/write errors for diagnostics.

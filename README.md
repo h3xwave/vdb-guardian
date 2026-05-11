@@ -45,6 +45,7 @@ Implemented in this scaffold:
 - `vdbg build-pgvector-artifact` real pgvector fingerprint artifact CLI.
 - `vdbg compare-artifacts` real source/target fingerprint artifact comparison CLI.
 - Internal minimal Milvus-to-pgvector migration runner boundary.
+- Tested migration source/target adapter boundary for Milvus reads and pgvector writes.
 - Synthetic vector dataset generator.
 - Fingerprint artifact builder.
 - Fingerprint engine interface.
