@@ -121,8 +121,8 @@ func TestWriteSyntheticDatasetWritesReadableJSON(t *testing.T) {
 	}
 
 	path := filepath.Join(t.TempDir(), "synthetic.json")
-	if err := WriteSyntheticDataset(path, dataset); err != nil {
-		t.Fatalf("WriteSyntheticDataset returned error: %v", err)
+	if writeErr := WriteSyntheticDataset(path, dataset); writeErr != nil {
+		t.Fatalf("WriteSyntheticDataset returned error: %v", writeErr)
 	}
 
 	content, err := os.ReadFile(path)

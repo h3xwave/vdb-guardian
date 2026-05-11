@@ -32,6 +32,8 @@ linters-settings:
 
   govet:
     enable-all: true
+    disable:
+      - fieldalignment  # Disable field alignment checks (minor performance impact)
 
   gocyclo:
     min-complexity: 15

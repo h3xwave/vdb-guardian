@@ -66,14 +66,14 @@ func runPGVectorArtifactWithFactory(ctx context.Context, args []string, factory 
 	}
 	results := make([]fingerprints.SearchResult, 0, len(dataset.Queries))
 	for _, query := range dataset.Queries {
-		response, err := connector.Search(ctx, connectors.SearchRequest{
+		response, searchErr := connector.Search(ctx, connectors.SearchRequest{
 			Collection:  options.Collection,
 			QueryVector: query.Vector,
 			TopK:        options.TopK,
 			ExpandK:     options.ExpandK,
 		})
-		if err != nil {
-			return fmt.Errorf("search pgvector for query %q: %w", query.ID, err)
+		if searchErr != nil {
+			return fmt.Errorf("search pgvector for query %q: %w", query.ID, searchErr)
 		}
 		results = append(results, fingerprints.SearchResult{
 			QueryID: query.ID,

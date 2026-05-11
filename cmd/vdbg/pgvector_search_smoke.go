@@ -63,8 +63,8 @@ func runSearchPGVectorWithFactory(ctx context.Context, args []string, factory fu
 		return err
 	}
 	defer connector.Close()
-	if err := connector.Connect(ctx); err != nil {
-		return err
+	if connectErr := connector.Connect(ctx); connectErr != nil {
+		return connectErr
 	}
 	count, err := connector.Count(ctx, options.Collection)
 	if err != nil {
