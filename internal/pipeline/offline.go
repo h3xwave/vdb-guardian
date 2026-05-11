@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/huxinweidev-cloud/vdb-guardian/internal/connectors"
-	"github.com/huxinweidev-cloud/vdb-guardian/internal/fingerprints"
-	"github.com/huxinweidev-cloud/vdb-guardian/internal/jobs"
+	"github.com/h3xwave/vdb-guardian/internal/connectors"
+	"github.com/h3xwave/vdb-guardian/internal/fingerprints"
+	"github.com/h3xwave/vdb-guardian/internal/jobs"
 )
 
 // OfflinePipeline orchestrates a database-free local verification flow. It reads
@@ -121,11 +121,11 @@ func (p OfflinePipeline) Run(ctx context.Context, request OfflineRequest) (Offli
 
 	sourcePath := filepath.Join(p.ArtifactDir, fmt.Sprintf("%s-source-fingerprint.json", request.JobID))
 	targetPath := filepath.Join(p.ArtifactDir, fmt.Sprintf("%s-target-fingerprint.json", request.JobID))
-	if err := fingerprints.WriteArtifact(sourcePath, sourceArtifact); err != nil {
-		return OfflineResult{}, fmt.Errorf("write source fingerprint artifact: %w", err)
+	if writeErr := fingerprints.WriteArtifact(sourcePath, sourceArtifact); writeErr != nil {
+		return OfflineResult{}, fmt.Errorf("write source fingerprint artifact: %w", writeErr)
 	}
-	if err := fingerprints.WriteArtifact(targetPath, targetArtifact); err != nil {
-		return OfflineResult{}, fmt.Errorf("write target fingerprint artifact: %w", err)
+	if writeErr := fingerprints.WriteArtifact(targetPath, targetArtifact); writeErr != nil {
+		return OfflineResult{}, fmt.Errorf("write target fingerprint artifact: %w", writeErr)
 	}
 
 	verificationResult, err := p.Runner.Run(ctx, jobs.VerificationRequest{

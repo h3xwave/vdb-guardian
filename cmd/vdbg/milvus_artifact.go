@@ -6,8 +6,8 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/huxinweidev-cloud/vdb-guardian/internal/connectors"
-	"github.com/huxinweidev-cloud/vdb-guardian/internal/fingerprints"
+	"github.com/h3xwave/vdb-guardian/internal/connectors"
+	"github.com/h3xwave/vdb-guardian/internal/fingerprints"
 )
 
 type milvusArtifactOptions struct {
@@ -65,19 +65,19 @@ func runMilvusArtifactWithFactory(ctx context.Context, args []string, factory fu
 		return err
 	}
 	defer connector.Close()
-	if err := connector.Connect(ctx); err != nil {
-		return err
+	if connectErr := connector.Connect(ctx); connectErr != nil {
+		return connectErr
 	}
 	results := make([]fingerprints.SearchResult, 0, len(dataset.Queries))
 	for _, query := range dataset.Queries {
-		response, err := connector.Search(ctx, connectors.SearchRequest{
+		response, searchErr := connector.Search(ctx, connectors.SearchRequest{
 			Collection:  options.Collection,
 			QueryVector: query.Vector,
 			TopK:        options.TopK,
 			ExpandK:     options.ExpandK,
 		})
-		if err != nil {
-			return fmt.Errorf("search Milvus for query %q: %w", query.ID, err)
+		if searchErr != nil {
+			return fmt.Errorf("search Milvus for query %q: %w", query.ID, searchErr)
 		}
 		results = append(results, fingerprints.SearchResult{
 			QueryID: query.ID,

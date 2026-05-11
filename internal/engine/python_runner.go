@@ -96,10 +96,11 @@ func (r PythonRunner) Compare(ctx context.Context, input CompareInput) (CompareO
 
 	inputPath := filepath.Join(tempDir, "input.json")
 	outputPath := filepath.Join(tempDir, "output.json")
-	if err := writeCompareInput(inputPath, input); err != nil {
-		return CompareOutput{}, err
+	if writeErr := writeCompareInput(inputPath, input); writeErr != nil {
+		return CompareOutput{}, writeErr
 	}
 
+	// #nosec G204 -- PythonPath is controlled by the application, not user input
 	cmd := exec.CommandContext(ctx, r.PythonPath, "-m", module, "compare", "--input", inputPath, "--output", outputPath)
 	if r.WorkDir != "" {
 		cmd.Dir = r.WorkDir
@@ -109,11 +110,11 @@ func (r PythonRunner) Compare(ctx context.Context, input CompareInput) (CompareO
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 
-	if err := cmd.Run(); err != nil {
+	if runErr := cmd.Run(); runErr != nil {
 		if ctxErr := ctx.Err(); ctxErr != nil {
 			return CompareOutput{}, fmt.Errorf("run python engine compare canceled: %w", ctxErr)
 		}
-		return CompareOutput{}, fmt.Errorf("run python engine compare: %w: stdout=%q stderr=%q", err, stdout.String(), stderr.String())
+		return CompareOutput{}, fmt.Errorf("run python engine compare: %w: stdout=%q stderr=%q", runErr, stdout.String(), stderr.String())
 	}
 
 	output, err := readCompareOutput(outputPath)
@@ -126,11 +127,7 @@ func (r PythonRunner) Compare(ctx context.Context, input CompareInput) (CompareO
 // writeCompareInput serializes the Go CompareInput into the snake_case JSON
 // protocol consumed by the Python fingerprint engine CLI.
 func writeCompareInput(path string, input CompareInput) error {
-	payload := compareInputJSON{
-		JobID:                 input.JobID,
-		SourceFingerprintPath: input.SourceFingerprintPath,
-		TargetFingerprintPath: input.TargetFingerprintPath,
-	}
+	payload := compareInputJSON(input)
 	data, err := json.MarshalIndent(payload, "", "  ")
 	if err != nil {
 		return fmt.Errorf("marshal engine input: %w", err)
@@ -150,7 +147,7 @@ func readCompareOutput(path string) (CompareOutput, error) {
 	}
 	var payload compareOutputJSON
 	if err := json.Unmarshal(data, &payload); err != nil {
-		return CompareOutput{}, fmt.Errorf("decode engine output %q: %w", err)
+		return CompareOutput{}, fmt.Errorf("decode engine output %q: %w", path, err)
 	}
 	return CompareOutput{
 		JobID:            payload.JobID,
